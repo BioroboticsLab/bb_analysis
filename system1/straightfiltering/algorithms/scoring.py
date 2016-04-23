@@ -1,5 +1,3 @@
-import numpy as np
-
 import auxiliary as aux
 import data_structures as ds
 

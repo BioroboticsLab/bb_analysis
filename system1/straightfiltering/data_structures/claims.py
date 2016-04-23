@@ -1,6 +1,3 @@
-import data_structures as ds
-
-
 # Score on a Match
 class MatchClaim( object ):
 

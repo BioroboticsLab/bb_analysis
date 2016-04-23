@@ -1,5 +1,3 @@
-from PyQt4 import QtCore
-
 import database as db
 
 

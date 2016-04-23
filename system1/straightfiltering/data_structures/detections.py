@@ -1,6 +1,4 @@
 import database as db
-import auxiliary as aux
-from algorithms import scoring as scoring
 
 
 class MatchSet( object ):
