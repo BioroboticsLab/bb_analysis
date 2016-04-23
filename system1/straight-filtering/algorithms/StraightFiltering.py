@@ -84,7 +84,7 @@ class StraightFiltering():
 
 		# set claims on best matches
 		for path in self.path_manager.open_paths:
-			mset = scoring.hamming_mean( path, dset )
+			mset = scoring.xgboost_learning( path, dset )
 			for m in mset.matches:
 				dset.add_claim( ds.MatchClaim( m[ 0 ], m[ 1 ], path ) )
 		dset.sort_claims()
