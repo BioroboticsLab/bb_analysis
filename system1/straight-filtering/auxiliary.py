@@ -1,4 +1,5 @@
 import math
+import pickle
 import numpy as np
 
 
@@ -43,6 +44,30 @@ def binary_id_to_int( binary_id ):
 	powers = np.power( 2, range(12) )[::-1]
 	id = int( np.sum( binary_id * powers ) )
 	return id
+
+
+# get the two neighboring digits of digit at position pos of binary array id
+# and read these three digits as binary number (0-7)
+def get_neighboring_digits_pattern( id_bin, pos ):
+
+	x = np.roll( id_bin, 1-pos )
+	return int( 4*x[0] + 2*x[1] + x[2] )
+
+
+with open( 'bit-flip-probability.pkl', 'rb' ) as myfile:
+	weighted_neighbourhood_array = pickle.load( myfile )
+
+
+def weighted_neighbourhood_id( id ):
+
+	result = np.zeros( 12 )
+
+	for pos in range( 0, 12 ):
+		pattern = get_neighboring_digits_pattern( int_id_to_binary( id ), pos )
+		look_up_value = weighted_neighbourhood_array[ pos*8 + pattern ]
+		result[ pos ] = look_up_value
+
+	return result
 
 
 # iterate over a list in neighboring pairs

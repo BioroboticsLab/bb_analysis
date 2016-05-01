@@ -46,7 +46,7 @@ class Path( object ):
 
 		self.matches = {}  # key: type timestamp, value: type Match
 
-		self.match_ids_sum = np.zeros( 12, dtype = np.int )
+		self.match_ids_sum = np.zeros( 12 )
 		self.match_ids_count = 0
 		self.determined_id = None
 
@@ -71,7 +71,8 @@ class Path( object ):
 			#candidates = list( set( [ c[0] for c in match.detection.candidate_ids ] ) )
 
 			for c in candidates:
-				self.match_ids_sum += aux.int_id_to_binary( c )
+				#self.match_ids_sum += aux.int_id_to_binary( c )
+				self.match_ids_sum += aux.weighted_neighbourhood_id( c )
 				self.match_ids_count += 1
 
 

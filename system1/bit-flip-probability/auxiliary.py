@@ -14,7 +14,8 @@ def int_id_to_binary( id ):
 	return np.array( result )
 
 
-# get the two neighboring digits of digit at position pos of binary array id and read these three digits as binary number (0-7)
+# get the two neighboring digits of digit at position pos of binary array id
+# and read these three digits as binary number (0-7)
 def get_neighboring_digits_pattern( id_bin, pos ):
 
 	x = np.roll( id_bin, 1-pos )
