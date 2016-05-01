@@ -1,5 +1,5 @@
 # bb_analysis
-Filtering BeesBook decoder output to generate bee tracks.
+Filtering [BeesBook Image Analysis Pipeline](https://github.com/BioroboticsLab/pipeline) output to generate bee tracks.
 
-[System 1 description](./system1/README.md)
+[System 1 description](./system1)
 
