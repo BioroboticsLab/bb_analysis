@@ -1,4 +1,4 @@
-# DetectionSetStore, DetectionSet, Detection and EmptyDetection classes, bb_analysis unified version 1.0
+# DetectionSetStore, DetectionSet, Detection and EmptyDetection classes, bb_analysis unified version 1.1
 
 
 import database as db
@@ -85,6 +85,7 @@ class Detection( object ):
 		# rotation in rad from -pi to pi, 0=east, 1.6=south, pi=west, -1.6=north
 
 		self.taken = False  # to control allocation to paths
+		self.path = None
 
 
 	def is_empty( self ):

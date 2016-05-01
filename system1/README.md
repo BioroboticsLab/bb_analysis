@@ -15,7 +15,7 @@ Since we already have plans to migrate to a revised database there is likely to 
 
 2. Preparation
 
-	1. Use our gui to track some ground truth data manually. *(to be released)*
+	1. Use our [editor gui](./editor-gui) to track some ground truth data manually.
 	2. [Generate a dataset](./learning-data-generator) for machine learning from the ground truth.
 		- *copy the dataset to /xgboost-learning*
 	4. [Train the xgboost learning model](./xgboost-learning) with the dataset.
