@@ -1,3 +1,6 @@
+# TimeStamp class, bb_analysis unified version 1.0
+
+
 import database as db
 
 

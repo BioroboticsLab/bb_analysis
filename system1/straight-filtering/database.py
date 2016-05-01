@@ -1,3 +1,6 @@
+# Connection class, bb_analysis unified version 1.0
+
+
 import psycopg2
 
 import config
@@ -94,11 +97,22 @@ class Connection:
 			if len( candidate_ids ) > 0:
 				zrotation = candidate_ids[ 0 ][ 2 ]
 
-			dset.add_detection( ds.ClaimableDetection(
+			dset.add_detection( ds.Detection(
 				#d_row[0], timestamp, np.array( [d_row[1],d_row[2]] ), d_row[3], candidate_ids
 				d_row[0], timestamp, np.array( [d_row[1],d_row[2]] ), zrotation, candidate_ids
 			) )
 		return dset
+
+
+	# returns int
+	def get_updated_id( self, detection ):
+
+		self.cursor.execute(
+			  "SELECT \"updatedID\" FROM " + detection.timestamp.table
+			+ " WHERE id = " + str(detection.detection_id)
+		)
+		result = self.cursor.fetchall()
+		return result[ 0 ][ 0 ]
 
 
 	# returns statusmessage as string
@@ -111,6 +125,80 @@ class Connection:
 			+ " WHERE id = " + str(detection.detection_id)
 		)
 		return self.cursor.statusmessage
+
+
+	# returns int
+	def get_truth_id( self, detection ):
+
+		# does column truthID exist?
+		self.cursor.execute(
+			  "SELECT EXISTS ("
+			+ "  SELECT 1 FROM information_schema.columns"
+			+ "  WHERE table_name = '" + detection.timestamp.table + "' AND column_name = 'truthID' )"
+		)
+
+		# if it does exist, get truthID
+		does_exist = self.cursor.fetchone()[ 0 ]
+		if does_exist:
+			self.cursor.execute(
+				"SELECT \"truthID\" FROM " + detection.timestamp.table
+				+ " WHERE id = " + str(detection.detection_id)
+			)
+			result = self.cursor.fetchall()
+			return result[ 0 ][ 0 ]
+		else:
+			return None
+
+
+	# returns statusmessage as string
+	# you need to commit changes afterwards
+	def write_truth_id( self, detection, truth_id ):
+
+		# does column truthID exist?
+		self.cursor.execute(
+			  "SELECT EXISTS ("
+			+ "  SELECT 1 FROM information_schema.columns"
+			+ "  WHERE table_name = '" + detection.timestamp.table + "' AND column_name = 'truthID' )"
+		)
+
+		# if it doesn't exist, add it
+		does_exist = self.cursor.fetchone()[ 0 ]
+		if not does_exist:
+			self.cursor.execute(
+				  "ALTER TABLE " + detection.timestamp.table
+				+ " ADD \"truthID\" smallint;"
+			)
+
+		# write into column
+		self.cursor.execute(
+			  "UPDATE " + detection.timestamp.table
+			+ " SET \"truthID\" = " + str(truth_id)
+			+ " WHERE id = " + str(detection.detection_id)
+		)
+		return self.cursor.statusmessage
+
+
+	# returns int
+	def get_path_number( self, detection ):
+
+		# does column pathID exist?
+		self.cursor.execute(
+			  "SELECT EXISTS ("
+			+ "  SELECT 1 FROM information_schema.columns"
+			+ "  WHERE table_name = '" + detection.timestamp.table + "' AND column_name = 'pathID' )"
+		)
+
+		# if it does exist, get pathID
+		does_exist = self.cursor.fetchone()[ 0 ]
+		if does_exist:
+			self.cursor.execute(
+				"SELECT \"pathID\" FROM " + detection.timestamp.table
+				+ " WHERE id = " + str(detection.detection_id)
+			)
+			result = self.cursor.fetchall()
+			return result[ 0 ][ 0 ]
+		else:
+			return None
 
 
 	# returns statusmessage as string

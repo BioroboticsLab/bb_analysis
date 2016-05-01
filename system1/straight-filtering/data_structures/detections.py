@@ -1,46 +1,15 @@
+# DetectionSetStore, DetectionSet, Detection and EmptyDetection classes, bb_analysis unified version 1.0
+
+
 import database as db
-
-
-class MatchSet( object ):
-
-	def __init__( self ):
-
-		self.matches = []  # list of tupel( Match, score )
-
-
-	def append( self, entry ):
-
-		self.matches.append( entry )
-
-
-	def sort( self ):
-
-		self.matches.sort( key = lambda match: match[1] )  # sort by score, least first
-
-
-	def truncate( self, n ):
-
-		self.matches = self.matches[0:n]
-
-
-# a match is when you choose a detection, that means it's a fit for your current problem;
-# normally you want to remember because of which id you chose that detection (chosen_id);
-# if your match wasn't because of a specific id, chosen_id can also be None;
-# and if you want to state that you didn't found any match, the detection can be an empty detection,
-# which is a detection with nothing but a timestamp
-class Match( object ):
-
-	def __init__( self, detection, chosen_id=None ):
-
-		self.detection = detection  # in case of no match, here will be an empty detection
-		self.chosen_id = chosen_id  # chosen candidate_id, None if undecided
 
 
 class DetectionSetStore( object ):
 
 	def __init__( self ):
 
-		self.store = {}  # key: type TimeStamp, value: type DetectionSet
+		self.store = {}    # key: type TimeStamp, value: type DetectionSet
+		self.empties = {}  # one empty detection for every timestamp
 
 
 	def get( self, timestamp, database_connection = None ):
@@ -59,6 +28,33 @@ class DetectionSetStore( object ):
 		return self.store[ timestamp ]
 
 
+	def get_with_one_empty_extra( self, timestamp, database_connection = None ):
+
+		if timestamp not in self.store:
+			close_connection = False
+			if database_connection is None:
+				database_connection = db.Connection()
+				close_connection = True
+
+			self.store[ timestamp ] = database_connection.get_detections_on_timestamp( timestamp )
+			if close_connection:
+				database_connection.close()
+
+		empty_detection = self.get_empty( timestamp )
+		dset = self.store[ timestamp ].clone()
+		dset.detections.append( empty_detection )
+		return dset
+
+
+	def get_empty( self, timestamp ):
+
+		if not timestamp in self.empties:
+			empty_detection = EmptyDetection( timestamp )
+			self.empties[ timestamp ] = empty_detection
+
+		return self.empties[ timestamp ]
+
+
 	def clear( self ):
 
 		self.store = {}
@@ -68,37 +64,12 @@ class DetectionSet( object ):
 
 	def __init__( self ):
 
-		self.detections = []  # list of ClaimableDetection
-		self.claims = []      # list of Claim
+		self.detections = []  # list of Detections
 
 
 	def add_detection( self, detection ):
 
 		self.detections.append( detection )
-
-
-	def add_claim( self, claim ):
-
-		self.claims.append( claim )
-
-
-	def sort_claims( self ):
-
-		self.claims.sort( key = lambda claim: claim.score )  # sort by score, less is better
-
-
-	def allocate_claims_greedy( self, timestamp, pm ):  # less is better
-
-		for claim in self.claims:
-			path = claim.path
-			if ( not claim.match.detection.taken ) and ( not path.has_match_at_timestamp( timestamp ) ):
-				path.add_match( claim.match )
-				claim.match.detection.take()
-
-
-	def delete_claims( self ):
-
-		self.claims = []
 
 
 class Detection( object ):
@@ -112,6 +83,8 @@ class Detection( object ):
 		self.candidate_ids = candidate_ids  # list of tupel( id, score, rotation )
 
 		# rotation in rad from -pi to pi, 0=east, 1.6=south, pi=west, -1.6=north
+
+		self.taken = False  # to control allocation to paths
 
 
 	def is_empty( self ):
@@ -129,15 +102,6 @@ class Detection( object ):
 		return str( self.detection_id )
 
 
-class ClaimableDetection( Detection ):
-
-	def __init__( self, detection_id, timestamp, position, orientation, candidate_ids ):
-
-		Detection.__init__( self, detection_id, timestamp, position, orientation, candidate_ids )
-
-		self.taken = False
-
-
 	def take( self ):
 
 		self.taken = True
@@ -149,5 +113,10 @@ class EmptyDetection( Detection ):
 	def __init__( self, timestamp ):
 
 		Detection.__init__( self, None, timestamp, None, None, None )
+
+
+	def take( self ):
+
+		pass  # empty detection can not be assigned exclusively to path
 
 

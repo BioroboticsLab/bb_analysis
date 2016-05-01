@@ -9,8 +9,9 @@ class StraightFiltering():
 
 	def __init__ ( self ):
 
-		self.path_manager = ds.PathManager()
-		self.dset_store   = ds.DetectionSetStore()
+		self.path_manager  = ds.PathManager()
+		self.dset_store    = ds.DetectionSetStore()
+		self.claim_manager = ds.ClaimManager()
 
 
 	def start( self ):
@@ -83,15 +84,16 @@ class StraightFiltering():
 		dset = self.dset_store.get( timestamp, None )
 
 		# set claims on best matches
+		self.claim_manager.clear()
 		for path in self.path_manager.open_paths:
 			mset = scoring.xgboost_learning( path, dset )
 			for m in mset.matches:
-				dset.add_claim( ds.MatchClaim( m[ 0 ], m[ 1 ], path ) )
-		dset.sort_claims()
+				self.claim_manager.add_claim( ds.MatchClaim( m[ 0 ], m[ 1 ], path ) )
+		self.claim_manager.sort_claims()
 
 		# allocate claims
-		dset.allocate_claims_greedy( timestamp, self.path_manager )
-		dset.delete_claims()
+		self.claim_manager.allocate_claims_greedy( timestamp, self.path_manager )
+		self.claim_manager.clear()
 
 		# set unsuccessful paths pending
 		for path in self.path_manager.open_paths:
