@@ -35,6 +35,12 @@ Since we already have plans to migrate to a revised database there is likely to 
 	* Visually inspect the filtering results. *(to be released)*
 	* Evaluate the filtering results against the ground truth. *(to be released)*
 
+## Utils
+
+* Remove double detections from database. *(to be released)*
+* Export results to CSV. *(to be released)*
+* Calculate some statistics about the truth data. *(to be released)*
+
 ## Database
 
 Has two tables for every minute of data.
