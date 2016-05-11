@@ -2,6 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import matplotlib.pyplot as plt
 
 import config
 import database as db
@@ -117,7 +118,7 @@ class MovementStatisticsGenerator():
 		print str(datalines_written) + ' lines written to movement.csv'
 
 
-	def plot( self ):
+	def plot_seaborn( self ):
 
 		# https://stanford.edu/~mwaskom/software/seaborn/tutorial/distributions.html
 
@@ -143,5 +144,31 @@ class MovementStatisticsGenerator():
 			sns.jointplot( x=x, y=y, kind='kde' )  # scatter, reg, resid, hex, kde
 
 		sns.plt.show()
+
+
+	def plot_matplotlib( self ):
+
+		# http://matplotlib.org/api/pyplot_api.html
+
+		data = pd.read_csv( 'movement.csv' ).as_matrix()
+
+		# 1/2 3/4 5/6 7/8
+		x_column = 3
+		y_column = 4
+
+		limit = 100
+		data = data[
+			  ( data[:,0] == 0)
+			& ( data[:,x_column] > -limit )
+			& ( data[:,x_column] < limit )
+			& ( data[:,y_column] > -limit )
+			& ( data[:,y_column] < limit )
+		]
+
+		x = data[:,x_column]
+		y = data[:,y_column]
+
+		plt.hexbin( x, y )
+		plt.show()
 
 

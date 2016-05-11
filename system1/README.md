@@ -39,7 +39,7 @@ Since we already have plans to migrate to a revised database there is likely to 
 
 * Remove double detections from database. *(to be released)*
 * Export results to CSV. *(to be released)*
-* Calculate some statistics about the truth data. *(to be released)*
+* [Calculate some statistics](./statistics) about the truth data.
 
 ## Database
 
