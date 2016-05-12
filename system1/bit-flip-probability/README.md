@@ -12,5 +12,7 @@ the value in the matrix is the likelihood this bit was really 1.
 Using this information for the average id calculation we simply add the likelihood to the sum instead
 of the bit value the decoder gave us.
 
+Will output the file bit-flip-probability.pkl.
+
 Use plot.py to plot the matrix for visual comparisons.
 

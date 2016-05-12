@@ -4,6 +4,8 @@
 
 Needs the files [xgb-model.bin](../xgboost-learning) and [bit-flip-probability.pkl](../bit-flip-probability).
 
+Result is written to the database.
+
 ## Dependencies
 
 * math

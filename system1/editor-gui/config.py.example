@@ -4,5 +4,5 @@ DB_PASSWORD = "123456"
 DB_HOST     = "localhost"
 DB_PORT     = "5432"
 
-IMG_FOLDER  = "../bb_images/Cam_0_20140802"
+IMG_FOLDER  = "../bb_images/2014-08-02_14:40_Cam0"
 
