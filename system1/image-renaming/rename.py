@@ -4,7 +4,7 @@
 # be able to derive the exact filename for a given frame from the database.
 # The filename of images from the old setup has a single digit frame number instead of milliseconds.
 # From the database it's not possible to know wether a single digit was meant or the last two digits
-# were zero. So the image names are padded with two zeros to get an uniforn naming scheme.
+# were zero. So the image names are padded with two zeros to get a uniforn naming scheme.
 
 import os
 import re
