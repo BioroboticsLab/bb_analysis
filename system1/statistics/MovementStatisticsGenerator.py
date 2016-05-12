@@ -9,7 +9,7 @@ import database as db
 import data_structures as ds
 
 
-class MovementStatisticsGenerator():
+class MovementStatisticsGenerator( object ):
 
 	def __init__ ( self ):
 

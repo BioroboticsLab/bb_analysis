@@ -11,7 +11,7 @@ OUTPUT_NONMATCHING = True
 FRAMES_GAP_LIMIT = 32
 
 
-class Generator():
+class Generator( object ):
 
 	def __init__ ( self ):
 

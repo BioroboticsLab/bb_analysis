@@ -2,6 +2,7 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 file_name = 'bit-flip-probability'
 
 with open( file_name + '.pkl', 'rb' ) as myfile:
@@ -12,6 +13,7 @@ w = np.reshape( np.round( w, 2 ), (12,8) )
 s = np.array( [0,0,1,1,0,0,1,1] )
 m = np.array( [-1,-1,1,1,-1,-1,1,1] )
 w = (s-w)*m
+
 
 ws = w+0.1
 
@@ -32,4 +34,5 @@ plt.xticks( np.arange(0,8), [ '000', '001', '010', '011', '100', '101', '110', '
 plt.yticks( np.arange(0,12), range(0,12) )
 plt.savefig( file_name + '.png', format='png' )
 plt.show()
+
 

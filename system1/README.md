@@ -33,7 +33,7 @@ Since we already have plans to migrate to a revised database there is likely to 
 4. Evaluation
 
 	* Visually inspect the filtering results. *(to be released)*
-	* Evaluate the filtering results against the ground truth. *(to be released)*
+	* [Evaluate](./evaluation) the filtering results against the ground truth.
 
 ## Utils
 
