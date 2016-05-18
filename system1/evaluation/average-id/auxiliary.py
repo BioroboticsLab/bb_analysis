@@ -65,7 +65,6 @@ def get_distribution_from_id( int_id ):
 		int_id = int_id.uint
 
 	realistic_dist = copy.deepcopy( _distribution_lut[int_id, :] )
-	realistic_dist = np.array( [1-rd for rd in realistic_dist], dtype=np.float64 )
 
 	return realistic_dist
 
