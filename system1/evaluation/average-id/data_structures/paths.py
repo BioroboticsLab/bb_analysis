@@ -55,10 +55,12 @@ class Path( object ):
 				self.ids_sum_weighted_neighbourhood += aux.weighted_neighbourhood_id( id )
 				self.ids_dist = self.ids_dist + aux.get_distribution_from_id( id )
 
-				if self.ids_count == 0:
-					self.ids_dists = aux.get_distribution_from_id( id )
-				else:
-					self.ids_dists = aux.add_observation( self.ids_dists, aux.get_distribution_from_id( id ), 1.0 )
+
+			# for the add_observation method we only use the first candidate, because the observations need to be independent.
+			if self.ids_count == 0:
+				self.ids_dists = aux.get_distribution_from_id( candidates[ 0 ] )
+			else:
+				self.ids_dists = aux.add_observation( self.ids_dists, aux.get_distribution_from_id( candidates[ 0 ] ), 0.1 )
 
 		else:
 			print 'Warning: detection not added, path already has detection for this timestamp'
