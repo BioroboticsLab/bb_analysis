@@ -1,9 +1,13 @@
 from MovementStatisticsGenerator import MovementStatisticsGenerator
+from CorrectnessStatisticsGenerator import CorrectnessStatisticsGenerator
 
 
-generator = MovementStatisticsGenerator()
-generator.start()
-generator.plot_seaborn()
-generator.plot_matplotlib()
+generator1 = MovementStatisticsGenerator()
+generator1.start()
+generator1.plot_seaborn()
+generator1.plot_matplotlib()
+
+generator2 = CorrectnessStatisticsGenerator()
+generator2.start()
 
 
