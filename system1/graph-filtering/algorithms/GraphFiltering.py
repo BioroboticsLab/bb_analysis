@@ -19,6 +19,7 @@ class GraphFiltering():
 
 		self.path_manager.clear()
 		self.dset_store.clear()
+		self.graph.clear()
 
 		timestamp = config.START_TIMESTAMP
 		duration  = config.FRAMES_DURATION

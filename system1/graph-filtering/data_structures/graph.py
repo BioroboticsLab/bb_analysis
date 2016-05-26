@@ -39,6 +39,11 @@ class Graph( object ):
 		self.timestamps = []
 
 
+	def set_future_depth( self, future_depth ):
+
+		self.future_depth = future_depth
+
+
 	# builds the graph, so that it goes from the given timestamp and continues for the length of future_depth
 	def build( self, timestamp ):
 
@@ -52,8 +57,6 @@ class Graph( object ):
 				self.add_nodes( timestamp_next )
 				self.add_edges( timestamp, timestamp_next )
 			timestamp = timestamp_next
-		#nx.draw( self.graph )  # don't try this at home
-		#plt.show()
 
 
 	def add_nodes( self, timestamp ):
@@ -122,5 +125,14 @@ class Graph( object ):
 
 		# remove entry point
 		self.graph.remove_node( last_detection )
+
+
+	def clear( self ):
+
+		for timestamp in self.timestamps:
+			dset = self.dset_store.get_with_one_empty_extra( timestamp, None )
+			self.graph.remove_nodes_from( dset.detections )
+
+		self.timestamps = []
 
 

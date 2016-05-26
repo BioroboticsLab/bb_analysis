@@ -5,9 +5,6 @@ from detections import DetectionSet
 from detections import Detection
 from detections import EmptyDetection
 
-from matches import MatchSet
-from matches import Match
-
 from claims import ClaimManager
 from claims import PathClaim
 
