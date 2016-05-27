@@ -118,7 +118,7 @@ class Graph( object ):
 					stack.pop()
 			elif len(stack) > 1:
 				future_path = list( stack )  # copy
-				score = scoring.future_path_scoring( start_path, future_path )
+				score = scoring.connection_scoring( start_path, future_path )
 				claim_manager.add_claim( ds.PathClaim( start_path, future_path, score ) )
 
 		traverse( self.graph, [ last_detection ] )
