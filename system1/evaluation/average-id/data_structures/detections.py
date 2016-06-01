@@ -1,4 +1,4 @@
-# DetectionSetStore, DetectionSet, Detection and EmptyDetection classes, bb_analysis unified version 1.1
+# DetectionSetStore, DetectionSet, Detection and EmptyDetection classes, bb_analysis unified version 1.2
 
 
 import database as db
@@ -70,6 +70,13 @@ class DetectionSet( object ):
 	def add_detection( self, detection ):
 
 		self.detections.append( detection )
+
+
+	def clone( self ):
+
+		new_ds = DetectionSet()
+		new_ds.detections = list( self.detections )
+		return new_ds
 
 
 class Detection( object ):
