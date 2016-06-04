@@ -2,21 +2,19 @@ import numpy as np
 from PyQt4 import QtGui, QtCore
 
 import auxiliary as aux
-import database as db
 import data_structures as ds
 from PathView import PathView
 from TagView import TagView
 
 
-class TruthingGUI( QtGui.QSplitter ):
+class EditorTab( QtGui.QSplitter ):
 
 	def __init__( self, parent, app ):
 
 		QtGui.QWidget.__init__( self, parent )
+		self.parent = parent
 		self.app = app
 
-		self.path_manager = None
-		self.dset_store = ds.DetectionSetStore()
 		self.current_paths = []
 
 		self.startTimestamp = None
@@ -29,57 +27,8 @@ class TruthingGUI( QtGui.QSplitter ):
 	# init gui elements
 	def buildLayout( self ):
 
-		# column 1
-		# data box
-		initDate = QtCore.QDate( 2014, 8, 2 )
-		minDate = QtCore.QDate( 2014, 1, 1 )
-		maxDate = QtCore.QDate( 2015, 12, 31 )
-		dateLable = QtGui.QLabel( 'Date:' )
-		self.dateInput = QtGui.QDateEdit( initDate, self )
-		self.dateInput.setMinimumDate( minDate )
-		self.dateInput.setMaximumDate( maxDate )
-		self.dateInput.setDisplayFormat( 'dd.MM.yyyy' )
-
-		camLable = QtGui.QLabel( 'Camera:', self )
-		self.camInput = QtGui.QSpinBox( self )
-		self.camInput.setRange( 0, 4 )
-		self.camInput.setValue( 0 )
-
-		minTime = QtCore.QTime( 0, 0, 0 )
-		maxTime = QtCore.QTime( 23, 59, 59 )
-
-		initStartTime = QtCore.QTime( 14, 40, 0 )
-		startTimeLable = QtGui.QLabel( 'Start Time:', self )
-		self.startTimeInput = QtGui.QTimeEdit( initStartTime, self )
-		self.startTimeInput.setMinimumTime( minTime )
-		self.startTimeInput.setMaximumTime( maxTime )
-		self.startTimeInput.setDisplayFormat( 'hh:mm:ss' )
-
-		initEndTime = QtCore.QTime( 14, 40, 59 )
-		endTimeLable = QtGui.QLabel( 'End Time:', self )
-		self.endTimeInput = QtGui.QTimeEdit( initEndTime, self )
-		self.endTimeInput.setMinimumTime( minTime )
-		self.endTimeInput.setMaximumTime( maxTime )
-		self.endTimeInput.setDisplayFormat( 'hh:mm:ss' )
-
-		self.loadButton = QtGui.QPushButton( 'Load', self )
-		self.loadButton.clicked.connect( self.load_truth_data )
-		self.loadProgress = QtGui.QProgressBar( self )
-		self.loadProgress.setMinimum( 0 )
-
-		groupBox1 = QtGui.QGroupBox( 'Data', self )
-		grid1 = QtGui.QGridLayout( self )
-		grid1.addWidget( dateLable,           0, 0, 1, 1 )
-		grid1.addWidget( self.dateInput,      0, 1, 1, 1 )
-		grid1.addWidget( camLable,            1, 0, 1, 1 )
-		grid1.addWidget( self.camInput,       1, 1, 1, 1 )
-		grid1.addWidget( startTimeLable,      2, 0, 1, 1 )
-		grid1.addWidget( self.startTimeInput, 2, 1, 1, 1 )
-		grid1.addWidget( endTimeLable,        3, 0, 1, 1 )
-		grid1.addWidget( self.endTimeInput,   3, 1, 1, 1 )
-		grid1.addWidget( self.loadButton,     4, 0, 1, 1 )
-		grid1.addWidget( self.loadProgress,   4, 1, 1, 1 )
-		groupBox1.setLayout( grid1 )
+		self.goto_loader_button = QtGui.QPushButton( 'To Loader', self )
+		self.goto_loader_button.clicked.connect( self.goto_loader )
 
 		# path tree
 		self.path_tree = QtGui.QTreeWidget( self )
@@ -96,12 +45,12 @@ class TruthingGUI( QtGui.QSplitter ):
 		self.saveProgress.setMinimum( 0 )
 
 		grid2 = QtGui.QGridLayout()
-		grid2.addWidget( self.newPathButton,   0, 0, 1, 2 )
-		grid2.addWidget( self.saveButton,      1, 0, 1, 1 )
-		grid2.addWidget( self.saveProgress,    1, 1, 1, 1 )
+		grid2.addWidget( self.newPathButton,      0, 0, 1, 2 )
+		grid2.addWidget( self.saveButton,         1, 0, 1, 1 )
+		grid2.addWidget( self.saveProgress,       1, 1, 1, 1 )
 
 		column_1 = QtGui.QVBoxLayout()
-		column_1.addWidget( groupBox1 )
+		column_1.addWidget( self.goto_loader_button )
 		column_1.addWidget( self.path_tree )
 		column_1.addLayout( grid2 )
 
@@ -189,47 +138,9 @@ class TruthingGUI( QtGui.QSplitter ):
 		self.addWidget( column_3_widget )
 
 
-	def load_truth_data( self ):
+	def goto_loader( self ):
 
-		self.startTimestamp = ds.TimeStamp( self.dateInput.date(), self.startTimeInput.time(), self.camInput.value() )
-		self.endTimestamp = ds.TimeStamp( self.dateInput.date(), self.endTimeInput.time(), self.camInput.value() )
-
-		if self.startTimestamp < self.endTimestamp and self.startTimestamp.exists():
-			self.path_manager = ds.PathManager()
-			self.dset_store.clear()
-
-			self.loadButton.setDisabled( True )
-			diff = self.startTimestamp.approximate_frames_difference( self.endTimestamp )
-			self.loadProgress.setMaximum( diff+1 )
-			self.app.processEvents()
-
-			database_connection = db.Connection()
-			loop_timestamp = self.startTimestamp
-			loop_index = 0
-			while ( loop_timestamp is not None ) and ( not self.endTimestamp < loop_timestamp ):
-
-				dset = self.dset_store.get( loop_timestamp, database_connection )
-				for d in dset.detections:
-					truth_id = database_connection.get_truth_id( d )
-					if truth_id is not None:
-						self.path_manager.add_detection( d, truth_id )
-
-				loop_timestamp = loop_timestamp.get_next( database_connection )
-				loop_index += 1
-				self.loadProgress.setValue( loop_index )
-				self.app.processEvents()
-
-			database_connection.close()
-			self.loadProgress.setValue( diff+1 )
-			self.set_current_timestamp( self.startTimestamp )
-			self.build_path_tree()
-
-			self.loadButton.setDisabled( False )
-			self.newPathButton.setDisabled( False )
-			self.saveButton.setDisabled( False )
-			self.previousButton.setDisabled( False )
-			self.nextButton.setDisabled( False )
-			self.app.processEvents()
+		self.parent.goto_loader()
 
 
 	def save_truth_data( self ):
