@@ -22,14 +22,20 @@ class StraightFiltering():
 		timestamp = config.START_TIMESTAMP
 		duration  = config.FRAMES_DURATION
 
+		database_connection = db.Connection()
+
 		print 'start filtering'
 		print '  host = ' + config.DB_HOST + ', date = ' + timestamp.date_name + ', cam = ' + str(timestamp.cam)
 		print '  start time = ' + timestamp.time_name + ', duration = ' + str(duration) + ' frames'
 
-		if not timestamp.exists( None ):
+		if not timestamp.exists( database_connection ):
+
+			database_connection.close()
+
 			print 'timestamp ' + timestamp.time_name + ' not found'
 			print 'filtering stopped'
 			print '--------------------------------'
+
 			return
 
 		# computing
@@ -37,7 +43,7 @@ class StraightFiltering():
 
 			print 'processing timestamp ' + timestamp.time_name
 
-			self.process_timestamp( timestamp )
+			self.process_timestamp( timestamp, database_connection )
 
 			print (
 				  '  paths: '
@@ -55,8 +61,6 @@ class StraightFiltering():
 		self.path_manager.close_all_paths()
 		if len(self.path_manager.closed_paths) > 0:
 
-			database_connection = db.Connection()
-
 			for i, path in enumerate( self.path_manager.closed_paths ):
 				unempty_matches = path.get_sorted_unempty_matches()
 
@@ -73,15 +77,16 @@ class StraightFiltering():
 						print statusmessage
 
 			database_connection.commit()
-			database_connection.close()
+
+		database_connection.close()
 
 		print str(len(self.path_manager.closed_paths)) + ' paths written to database'
 		print '--------------------------------'
 
 
-	def process_timestamp( self, timestamp ):
+	def process_timestamp( self, timestamp, database_connection ):
 
-		dset = self.dset_store.get( timestamp, None )
+		dset = self.dset_store.get( timestamp, database_connection )
 
 		# set claims on best matches
 		self.claim_manager.clear()
