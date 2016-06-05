@@ -45,31 +45,31 @@ class Graph( object ):
 
 
 	# builds the graph, so that it goes from the given timestamp and continues for the length of future_depth
-	def build( self, timestamp ):
+	def build( self, timestamp, database_connection ):
 
 		if not timestamp in self.timestamps:
-			self.add_nodes( timestamp )
+			self.add_nodes( timestamp, database_connection )
 		for i in range( 1, self.future_depth ):
-			timestamp_next = timestamp.get_next()
+			timestamp_next = timestamp.get_next( database_connection )
 			if timestamp_next is None:
 				break
 			if not timestamp_next in self.timestamps:
-				self.add_nodes( timestamp_next )
-				self.add_edges( timestamp, timestamp_next )
+				self.add_nodes( timestamp_next, database_connection )
+				self.add_edges( timestamp, timestamp_next, database_connection )
 			timestamp = timestamp_next
 
 
-	def add_nodes( self, timestamp ):
+	def add_nodes( self, timestamp, database_connection ):
 
-		dset = self.dset_store.get_with_one_empty_extra( timestamp, None )
+		dset = self.dset_store.get_with_one_empty_extra( timestamp, database_connection )
 		self.graph.add_nodes_from( dset.detections )
 		self.timestamps.append( timestamp )
 
 
-	def add_edges( self, timestamp1, timestamp2 ):
+	def add_edges( self, timestamp1, timestamp2, database_connection ):
 
-		dset1 = self.dset_store.get_with_one_empty_extra( timestamp1, None )
-		dset2 = self.dset_store.get_with_one_empty_extra( timestamp2, None )
+		dset1 = self.dset_store.get_with_one_empty_extra( timestamp1, database_connection )
+		dset2 = self.dset_store.get_with_one_empty_extra( timestamp2, database_connection )
 		for d1 in dset1.detections:
 			self.add_edges_for_detection( d1, dset2, 1 )
 
@@ -85,21 +85,21 @@ class Graph( object ):
 			self.graph.add_edge( d1, d2 )
 
 
-	def remove_timestamp( self, timestamp ):
+	def remove_timestamp( self, timestamp, database_connection ):
 
 		if timestamp in self.timestamps:
-			dset = self.dset_store.get_with_one_empty_extra( timestamp, None )
+			dset = self.dset_store.get_with_one_empty_extra( timestamp, database_connection )
 			self.graph.remove_nodes_from( dset.detections )
 			self.timestamps.remove( timestamp )
 
 
 	# traverses the graph for a given start_path.
 	# adds claims for every found future_path into the given claim_manager
-	def traverse_from_path( self, start_path, entry_timestamp, claim_manager ):
+	def traverse_from_path( self, start_path, entry_timestamp, claim_manager, database_connection ):
 
 		last_detection = start_path.get_sorted_unempty_detections()[ -1 ]
 
-		entry_dset = self.dset_store.get_with_one_empty_extra( entry_timestamp, None )
+		entry_dset = self.dset_store.get_with_one_empty_extra( entry_timestamp, database_connection )
 		frames_difference = last_detection.timestamp.frames_difference( entry_timestamp )
 
 		# add entry point for path into graph.
@@ -127,10 +127,10 @@ class Graph( object ):
 		self.graph.remove_node( last_detection )
 
 
-	def clear( self ):
+	def clear( self, database_connection ):
 
 		for timestamp in self.timestamps:
-			dset = self.dset_store.get_with_one_empty_extra( timestamp, None )
+			dset = self.dset_store.get_with_one_empty_extra( timestamp, database_connection )
 			self.graph.remove_nodes_from( dset.detections )
 
 		self.timestamps = []

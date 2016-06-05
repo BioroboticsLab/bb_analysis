@@ -51,7 +51,7 @@ class StraightFiltering():
 				+ str( len(self.path_manager.closed_paths) ) + ' closed'
 			)
 
-			timestamp = timestamp.get_next( None )
+			timestamp = timestamp.get_next( database_connection )
 			if timestamp is None:
 				break
 

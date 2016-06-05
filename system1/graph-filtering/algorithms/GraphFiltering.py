@@ -17,9 +17,11 @@ class GraphFiltering():
 
 	def start( self ):
 
+		database_connection = db.Connection()
+
 		self.path_manager.clear()
 		self.dset_store.clear()
-		self.graph.clear()
+		self.graph.clear( database_connection )
 
 		timestamp = config.START_TIMESTAMP
 		duration  = config.FRAMES_DURATION
@@ -28,10 +30,14 @@ class GraphFiltering():
 		print '  host = ' + config.DB_HOST + ', date = ' + timestamp.date_name + ', cam = ' + str(timestamp.cam)
 		print '  start time = ' + timestamp.time_name + ', duration = ' + str(duration) + ' frames'
 
-		if not timestamp.exists( None ):
+		if not timestamp.exists( database_connection ):
+
+			database_connection.close()
+
 			print 'timestamp ' + timestamp.time_name + ' not found'
 			print 'filtering stopped'
 			print '--------------------------------'
+
 			return
 
 		# computing
@@ -39,7 +45,7 @@ class GraphFiltering():
 
 			print 'processing timestamp ' + timestamp.time_name
 
-			self.process_timestamp( timestamp )
+			self.process_timestamp( timestamp, database_connection )
 
 			print (
 				  '  paths: '
@@ -47,7 +53,7 @@ class GraphFiltering():
 				+ str( len(self.path_manager.closed_paths) ) + ' closed'
 			)
 
-			timestamp = timestamp.get_next( None )
+			timestamp = timestamp.get_next( database_connection )
 			if timestamp is None:
 				break
 
@@ -56,8 +62,6 @@ class GraphFiltering():
 		# saving
 		self.path_manager.close_all_paths()
 		if len(self.path_manager.closed_paths) > 0:
-
-			database_connection = db.Connection()
 
 			for i, path in enumerate( self.path_manager.closed_paths ):
 				unempty_detections = path.get_sorted_unempty_detections()
@@ -75,16 +79,17 @@ class GraphFiltering():
 						print statusmessage
 
 			database_connection.commit()
-			database_connection.close()
+
+		database_connection.close()
 
 		print str(len(self.path_manager.closed_paths)) + ' paths written to database'
 		print '--------------------------------'
 
 
-	def process_timestamp( self, timestamp ):
+	def process_timestamp( self, timestamp, database_connection ):
 
 		# build or expand graph
-		self.graph.build( timestamp )
+		self.graph.build( timestamp, database_connection )
 
 		self.claim_manager.clear()
 
@@ -92,13 +97,13 @@ class GraphFiltering():
 		for path in self.path_manager.open_paths:
 
 			# traverse graph starting from given path
-			self.graph.traverse_from_path( path, timestamp, self.claim_manager )
+			self.graph.traverse_from_path( path, timestamp, self.claim_manager, database_connection )
 
 		# allocate claims
 		self.claim_manager.sort_claims()
 		self.claim_manager.allocate_claims_greedy()
 
-		self.graph.remove_timestamp( timestamp )  # remove all data from graph for this timestamp
+		self.graph.remove_timestamp( timestamp, database_connection )  # remove all data from graph for this timestamp
 		self.claim_manager.clear()
 
 		# set unsuccessful paths pending
