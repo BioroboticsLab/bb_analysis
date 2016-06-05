@@ -19,3 +19,7 @@ by averaging over the candidate ids of the detections.
 
 Needs the files [bit-flip-probability.pkl](../bit-flip-probability) and distribution_binary_lut_fixed_12bits.pkl.
 
+## Graph Filtering
+
+Evaluation scripts for the components of the graph filtering algorithm can be found in the [graph filtering folder](../graph-filtering).
+

@@ -1,6 +1,7 @@
 import numpy as np
 from PyQt4 import QtGui, QtCore
 
+import database as db
 import auxiliary as aux
 import data_structures as ds
 from PathView import PathView
@@ -15,17 +16,22 @@ class EditorTab( QtGui.QSplitter ):
 		self.parent = parent
 		self.app = app
 
-		self.current_paths = []
+		self.dset_store = self.parent.dset_store
+		self.path_manager = self.parent.path_manager
 
-		self.startTimestamp = None
-		self.endTimestamp = None
-		self.currentTimestamp = None
+		self.start_timestamp = None
+		self.end_timestamp = None
+		self.current_timestamp = None
+
+		self.current_paths = []
 
 		self.buildLayout()
 
 
 	# init gui elements
 	def buildLayout( self ):
+
+		# column 1
 
 		self.goto_loader_button = QtGui.QPushButton( 'To Loader', self )
 		self.goto_loader_button.clicked.connect( self.goto_loader )
@@ -35,30 +41,31 @@ class EditorTab( QtGui.QSplitter ):
 		self.path_tree.setHeaderLabels( [ "Paths" ] )
 		self.path_tree.itemClicked.connect( self.select_path )
 
-		self.newPathButton = QtGui.QPushButton( 'Add new Path', self )
-		self.newPathButton.clicked.connect( self.add_new_path )
-		self.newPathButton.setDisabled( True )
-		self.saveButton = QtGui.QPushButton( 'Save', self )
-		self.saveButton.clicked.connect( self.save_truth_data )
-		self.saveButton.setDisabled( True )
-		self.saveProgress = QtGui.QProgressBar( self )
-		self.saveProgress.setMinimum( 0 )
+		self.new_path_button = QtGui.QPushButton( 'Add new Path', self )
+		self.new_path_button.clicked.connect( self.add_new_path )
 
-		grid2 = QtGui.QGridLayout()
-		grid2.addWidget( self.newPathButton,      0, 0, 1, 2 )
-		grid2.addWidget( self.saveButton,         1, 0, 1, 1 )
-		grid2.addWidget( self.saveProgress,       1, 1, 1, 1 )
+		self.save_button = QtGui.QPushButton( 'Save', self )
+		self.save_button.clicked.connect( self.save_truth_data )
 
-		column_1 = QtGui.QVBoxLayout()
-		column_1.addWidget( self.goto_loader_button )
-		column_1.addWidget( self.path_tree )
-		column_1.addLayout( grid2 )
+		self.save_progress = QtGui.QProgressBar( self )
+		self.save_progress.setMinimum( 0 )
+
+		edit_grid = QtGui.QGridLayout()
+		edit_grid.addWidget( self.new_path_button, 0, 0, 1, 2 )
+		edit_grid.addWidget( self.save_button,     1, 0, 1, 1 )
+		edit_grid.addWidget( self.save_progress,   1, 1, 1, 1 )
+
+		column_1_layout = QtGui.QVBoxLayout()
+		column_1_layout.addWidget( self.goto_loader_button )
+		column_1_layout.addWidget( self.path_tree )
+		column_1_layout.addLayout( edit_grid )
 
 		column_1_widget = QtGui.QWidget( self )
-		column_1_widget.setLayout( column_1 )
+		column_1_widget.setLayout( column_1_layout )
 
 
 		# column 2
+
 		self.path_id_lable = QtGui.QLabel( 'Id:', self )
 
 		self.tag_view = TagView( self )
@@ -68,7 +75,6 @@ class EditorTab( QtGui.QSplitter ):
 
 		self.edit_id_button = QtGui.QPushButton( '', self )
 		self.edit_id_button.clicked.connect( self.edit_id )
-		self.edit_id_button.setDisabled( True )
 
 		self.path_table = QtGui.QTableWidget( self )
 		self.path_table.setRowCount( 0 )
@@ -78,64 +84,89 @@ class EditorTab( QtGui.QSplitter ):
 		self.path_table.setEditTriggers( QtGui.QAbstractItemView.NoEditTriggers )
 		self.path_table.setSelectionBehavior( QtGui.QAbstractItemView.SelectRows )
 
-		pathGroupBox = QtGui.QGroupBox( 'Path Details', self )
-		grid3 = QtGui.QGridLayout()
-		grid3.addWidget( self.path_id_lable,  0, 0, 1, 1 )
-		grid3.addWidget( self.tag_view,       0, 1, 2, 1 )
-		grid3.addWidget( self.edit_id_button, 1, 0, 1, 1 )
-		grid3.addWidget( self.path_table,     2, 0, 1, 2 )
-		pathGroupBox.setLayout( grid3 )
+		path_details_box = QtGui.QGroupBox( 'Path Details', self )
+		path_details_grid = QtGui.QGridLayout()
+		path_details_grid.addWidget( self.path_id_lable,  0, 0, 1, 1 )
+		path_details_grid.addWidget( self.tag_view,       0, 1, 2, 1 )
+		path_details_grid.addWidget( self.edit_id_button, 1, 0, 1, 1 )
+		path_details_grid.addWidget( self.path_table,     2, 0, 1, 2 )
+		path_details_box.setLayout( path_details_grid )
 
-		column_2 = QtGui.QVBoxLayout()
-		column_2.addWidget( pathGroupBox )
+		column_2_layout = QtGui.QVBoxLayout()
+		column_2_layout.addWidget( path_details_box )
 
 		column_2_widget = QtGui.QWidget( self )
-		column_2_widget.setLayout( column_2 )
+		column_2_widget.setLayout( column_2_layout )
 
 
 		# column 3
+
 		# view
 		self.path_view = PathView( self, self.on_ellipse_click, self.on_key_press )
 		self.path_view.setRenderHint( QtGui.QPainter.Antialiasing, True )
 
-		self.previousButton = QtGui.QPushButton( 'Previous', self )
-		self.previousButton.clicked.connect( self.show_previous )
-		self.previousButton.setDisabled( True )
+		# view buttons
+		self.previous_button = QtGui.QPushButton( 'Previous', self )
+		self.previous_button.clicked.connect( self.show_previous )
 		self.time_lable = QtGui.QLabel( self )
-		self.nextButton = QtGui.QPushButton( 'Next', self )
-		self.nextButton.clicked.connect( self.show_next )
-		self.nextButton.setDisabled( True )
+		self.next_button = QtGui.QPushButton( 'Next', self )
+		self.next_button.clicked.connect( self.show_next )
 
 		self.show_ids_checkbox = QtGui.QCheckBox( 'Show IDs', self )
 		self.show_ids_checkbox.clicked.connect( self.update_path_view )
 
-		self.darken_checkbox = QtGui.QCheckBox( 'Darken Image', self )
-		self.darken_checkbox.clicked.connect( self.update_path_view )
+		self.darken_image_checkbox = QtGui.QCheckBox( 'Darken Image', self )
+		self.darken_image_checkbox.clicked.connect( self.update_path_view )
 
-		self.path_checkbox = QtGui.QCheckBox( 'Show Path', self )
-		self.path_checkbox.clicked.connect( self.update_path_view )
+		self.show_path_checkbox = QtGui.QCheckBox( 'Show Path', self )
+		self.show_path_checkbox.clicked.connect( self.update_path_view )
 
-		viewButtonsBox = QtGui.QHBoxLayout()
-		viewButtonsBox.addWidget( self.previousButton )
-		viewButtonsBox.addWidget( self.time_lable )
-		viewButtonsBox.addWidget( self.nextButton )
-		viewButtonsBox.addWidget( self.show_ids_checkbox )
-		viewButtonsBox.addWidget( self.darken_checkbox )
-		viewButtonsBox.addWidget( self.path_checkbox )
-		viewButtonsBox.addStretch( 1 )
+		view_buttons_box = QtGui.QHBoxLayout()
+		view_buttons_box.addWidget( self.previous_button )
+		view_buttons_box.addWidget( self.time_lable )
+		view_buttons_box.addWidget( self.next_button )
+		view_buttons_box.addWidget( self.show_ids_checkbox )
+		view_buttons_box.addWidget( self.darken_image_checkbox )
+		view_buttons_box.addWidget( self.show_path_checkbox )
+		view_buttons_box.addStretch( 1 )
 
-		column_3 = QtGui.QVBoxLayout()
-		column_3.addWidget( self.path_view )
-		column_3.addLayout( viewButtonsBox )
+		column_3_layout = QtGui.QVBoxLayout()
+		column_3_layout.addWidget( self.path_view )
+		column_3_layout.addLayout( view_buttons_box )
 
 		column_3_widget = QtGui.QWidget( self )
-		column_3_widget.setLayout( column_3 )
-
+		column_3_widget.setLayout( column_3_layout )
 
 		# horizontal, resizeable layout
 		self.addWidget( column_1_widget )
 		self.addWidget( column_2_widget )
 		self.addWidget( column_3_widget )
+
+
+	def activate( self ):
+
+		self.previous_button.setDisabled( True )
+		self.next_button.setDisabled( True )
+		self.new_path_button.setDisabled( True )
+		self.save_button.setDisabled( True )
+		self.edit_id_button.setDisabled( True )
+
+		if len( self.dset_store.store ) > 0:
+
+			self.previous_button.setDisabled( False )
+			self.next_button.setDisabled( False )
+
+			if self.path_manager.data_source == 0:
+
+				self.new_path_button.setDisabled( False )
+				self.save_button.setDisabled( False )
+
+			timestamps = self.dset_store.store.keys()
+			self.start_timestamp = min( timestamps )
+			self.end_timestamp = max( timestamps )
+			self.set_current_timestamp( self.start_timestamp )
+
+			self.build_path_tree()
 
 
 	def goto_loader( self ):
@@ -146,19 +177,20 @@ class EditorTab( QtGui.QSplitter ):
 	def save_truth_data( self ):
 
 		if self.path_manager is not None and len( self.path_manager.paths ) > 0:
-			self.saveProgress.setValue( 0 )
-			self.saveProgress.setMaximum( len(self.path_manager.paths) )
+
+			self.save_progress.setValue( 0 )
+			self.save_progress.setMaximum( len(self.path_manager.paths) )
 
 			database_connection = db.Connection()
 
-			for i, key in enumerate( self.path_manager.paths ):
+			for i, key in enumerate( self.path_manager.paths.keys() ):
 				if key is not None:
-					for path in self.path_manager.paths[ key ]:
+					for path in self.path_manager.paths[ key ].values():
 						for t,d in path.detections.items():
-							statusmessage = database_connection.write_truth_id( d, path.assigned_id )
+							statusmessage = database_connection.write_truth_id( d, key )
 							if statusmessage != "UPDATE 1":
 								print statusmessage
-				self.saveProgress.setValue( i+1 )
+				self.save_progress.setValue( i+1 )
 			# TODO: delete deleted ids. At the moment we only write and overwrite!
 
 			database_connection.commit()
@@ -182,10 +214,10 @@ class EditorTab( QtGui.QSplitter ):
 			key_node.path_id = k
 			key_node.path_number = None
 
-			for i, path in enumerate( self.path_manager.paths[ k ] ):
-				path_node = QtGui.QTreeWidgetItem( key_node, [ 'path_' + str( i ) ] )
+			for pn, path in self.path_manager.paths[ k ].items():
+				path_node = QtGui.QTreeWidgetItem( key_node, [ 'path_' + str( pn ) ] )
 				path_node.path_id = k
-				path_node.path_number = i
+				path_node.path_number = pn
 
 		self.build_path_details( [] )
 
@@ -193,10 +225,10 @@ class EditorTab( QtGui.QSplitter ):
 	def select_path( self, item, column ):
 
 		if item.path_number is not None:
-			paths = [ self.path_manager.get_path( item.path_id, item.path_number ) ]
-			self.build_path_details( paths )
+			path = self.path_manager.get_path( item.path_id, item.path_number )
+			self.build_path_details( [ path ] )
 		else:
-			paths = [ x for x in self.path_manager.paths[ item.path_id ] ]
+			paths = self.path_manager.paths[ item.path_id ].values()
 			self.build_path_details( paths )
 
 
@@ -210,7 +242,10 @@ class EditorTab( QtGui.QSplitter ):
 		if len( paths ) == 1:
 			path = paths[ 0 ]
 			self.path_id_lable.setText( 'Id: ' + str(path.assigned_id) )
-			self.edit_id_button.setDisabled( False )
+
+			if self.path_manager.data_source == 0:
+				self.edit_id_button.setDisabled( False )
+
 			if path.assigned_id is not None:
 				self.edit_id_button.setText( 'Save Id' )
 				self.tag_view.setTag( path.assigned_id )
@@ -258,7 +293,7 @@ class EditorTab( QtGui.QSplitter ):
 
 	def set_current_timestamp( self, timestamp ):
 
-		self.currentTimestamp = timestamp
+		self.current_timestamp = timestamp
 		self.time_lable.setText( timestamp.time_name )
 		self.update_path_view()
 
@@ -266,25 +301,25 @@ class EditorTab( QtGui.QSplitter ):
 	def update_path_view( self ):
 
 		self.path_view.clear()
-		self.path_view.show_frame( self.currentTimestamp, darken = self.darken_checkbox.isChecked() )
-		if self.path_checkbox.isChecked():
+		self.path_view.show_frame( self.current_timestamp, darken = self.darken_image_checkbox.isChecked() )
+		if self.show_path_checkbox.isChecked():
 			for path in self.current_paths:
-				self.path_view.renderTruthPath( path )
-		self.path_view.show_detections( self.dset_store.get( self.currentTimestamp ), self.current_paths, show_ids = self.show_ids_checkbox.isChecked() )
+				self.path_view.render_truth_path( path )
+		self.path_view.show_detections( self.dset_store.get( self.current_timestamp ), self.current_paths, show_ids = self.show_ids_checkbox.isChecked() )
 
 
 	def show_next( self ):
 
-		next_timestamp = self.currentTimestamp.get_next()
-		if next_timestamp is not None and not self.endTimestamp < next_timestamp:
+		next_timestamp = self.current_timestamp.get_next()
+		if next_timestamp is not None and not self.end_timestamp < next_timestamp:
 			self.set_current_timestamp( next_timestamp )
 
 
 	def show_next_with_auto_add( self ):
 
 		# set next timestamp
-		next_timestamp = self.currentTimestamp.get_next()
-		if next_timestamp is not None and not self.endTimestamp < next_timestamp:
+		next_timestamp = self.current_timestamp.get_next()
+		if next_timestamp is not None and not self.end_timestamp < next_timestamp:
 			self.set_current_timestamp( next_timestamp )
 		else:
 			return
@@ -299,21 +334,21 @@ class EditorTab( QtGui.QSplitter ):
 		mouse_pos = np.clip( mouse_pos, 0, [4000,3000] )
 
 		# get nearest detection within a limit
-		auto_detection = self.getNearestDetection( self.currentTimestamp, mouse_pos, 70 )
+		auto_detection = self.get_nearest_detection( self.current_timestamp, mouse_pos, 70 )
 		if auto_detection is not None and auto_detection.path is None:  # not already assigned
-			if not self.currentTimestamp in self.current_paths[ 0 ].detections:
+			if not self.current_timestamp in self.current_paths[ 0 ].detections:
 				self.current_paths[ 0 ].add_and_overwrite_detection( auto_detection )
 				self.build_path_details( self.current_paths )
 
 
 	def show_previous( self ):
 
-		previous_timestamp = self.currentTimestamp.get_previous()
-		if previous_timestamp is not None and not previous_timestamp < self.startTimestamp:
+		previous_timestamp = self.current_timestamp.get_previous()
+		if previous_timestamp is not None and not previous_timestamp < self.start_timestamp:
 			self.set_current_timestamp( previous_timestamp )
 
 
-	def getNearestDetection( self, timestamp, pos, limit ):
+	def get_nearest_detection( self, timestamp, pos, limit ):
 
 		nearest = None
 		nearest_distance = float( "inf" )
@@ -341,9 +376,13 @@ class EditorTab( QtGui.QSplitter ):
 	def on_ellipse_click( self, detection ):
 
 		if len( self.current_paths ) == 1:
+
+			# clicked on detection not belonging to any path, then add to path
 			if detection.path is None:
 				self.current_paths[ 0 ].add_and_overwrite_detection( detection )
 				self.build_path_details( self.current_paths )
+
+			# clicked on detection from active path, then remove from path
 			elif detection.path is self.current_paths[ 0 ]:
 				self.current_paths[ 0 ].remove_detection( detection )
 				self.build_path_details( self.current_paths )

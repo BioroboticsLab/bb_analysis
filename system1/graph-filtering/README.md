@@ -16,3 +16,7 @@ Result is written to the database.
 * QtCore from PyQt4
 * networkx
 
+## Evaluation
+
+Use eval.py to evaluate the components of the graph filtering algorithm.
+

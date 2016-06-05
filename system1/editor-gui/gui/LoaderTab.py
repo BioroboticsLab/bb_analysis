@@ -13,9 +13,6 @@ class LoaderTab( QtGui.QWidget ):
 		self.parent = parent
 		self.app = app
 
-		self.path_manager = None
-		self.dset_store = ds.DetectionSetStore()
-
 		self.build_layout()
 
 
@@ -128,8 +125,7 @@ class LoaderTab( QtGui.QWidget ):
 		self.load_source_truth.setChecked( True )
 
 		self.load_button = QtGui.QPushButton( 'Load', self )
-		self.load_button.setDisabled( True )
-		self.load_button.clicked.connect( self.load_truth_data )
+		self.load_button.clicked.connect( self.load_data )
 		self.load_progress = QtGui.QProgressBar( self )
 		self.load_progress.setMinimum( 0 )
 
@@ -182,47 +178,68 @@ class LoaderTab( QtGui.QWidget ):
 		config.IMG_FOLDER  = self.img_folder_input.text()
 
 
-	def load_truth_data( self ):
+	def load_data( self ):
 
-		self.startTimestamp = ds.TimeStamp( self.dateInput.date(), self.startTimeInput.time(), self.camInput.value() )
-		self.endTimestamp = ds.TimeStamp( self.dateInput.date(), self.endTimeInput.time(), self.camInput.value() )
+		self.load_button.setDisabled( True )
+		self.goto_editor_button.setDisabled( True )
+		self.app.processEvents()
 
-		if self.startTimestamp < self.endTimestamp and self.startTimestamp.exists():
-			self.path_manager = ds.PathManager()
-			self.dset_store.clear()
+		start_timestamp = ds.TimeStamp( self.date_input.date(), self.start_time_input.time(), self.cam_input.value() )
+		end_timestamp = ds.TimeStamp( self.date_input.date(), self.end_time_input.time(), self.cam_input.value() )
 
-			self.load_button.setDisabled( True )
-			diff = self.startTimestamp.approximate_frames_difference( self.endTimestamp )
+		if start_timestamp < end_timestamp and start_timestamp.exists():
+
+			dset_store = self.parent.dset_store
+			dset_store.clear()
+
+			path_manager = self.parent.path_manager
+			path_manager.clear()
+
+			if self.load_source_truth.isChecked():
+				path_manager.data_source = 0  # truth_id
+			else:
+				path_manager.data_source = 1  # updated_id
+
+			diff = start_timestamp.frames_difference( end_timestamp )
 			self.load_progress.setMaximum( diff+1 )
 			self.app.processEvents()
 
 			database_connection = db.Connection()
-			loop_timestamp = self.startTimestamp
-			loop_index = 0
-			while ( loop_timestamp is not None ) and ( not self.endTimestamp < loop_timestamp ):
 
-				dset = self.dset_store.get( loop_timestamp, database_connection )
+			loop_timestamp = start_timestamp
+			loop_index = 0
+
+			while ( loop_timestamp is not None ) and ( not end_timestamp < loop_timestamp ):
+
+				dset = dset_store.get( loop_timestamp, database_connection )
 				for d in dset.detections:
-					truth_id = database_connection.get_truth_id( d )
-					if truth_id is not None:
-						self.path_manager.add_detection( d, truth_id )
+
+					if path_manager.data_source == 0:
+						truth_id = database_connection.get_truth_id( d )
+						if truth_id is not None:
+							path_manager.add_detection( d, truth_id )
+
+					else:
+						updated_id = database_connection.get_updated_id( d )
+						if updated_id is not None:
+							path_number = database_connection.get_path_number( d )
+							if path_number is not None:
+								path_manager.add_detection_to_path( d, updated_id, path_number )
+							else:
+								path_manager.add_detection( d, updated_id )
 
 				loop_timestamp = loop_timestamp.get_next( database_connection )
 				loop_index += 1
-				self.loadProgress.setValue( loop_index )
+				self.load_progress.setValue( loop_index )
 				self.app.processEvents()
 
 			database_connection.close()
-			self.loadProgress.setValue( diff+1 )
-			self.set_current_timestamp( self.startTimestamp )
-			self.build_path_tree()
 
-			self.loadButton.setDisabled( False )
-			self.newPathButton.setDisabled( False )
-			self.saveButton.setDisabled( False )
-			self.previousButton.setDisabled( False )
-			self.nextButton.setDisabled( False )
-			self.app.processEvents()
+			self.load_progress.setValue( diff+1 )
+
+		self.load_button.setDisabled( False )
+		self.goto_editor_button.setDisabled( False )
+		self.app.processEvents()
 
 
 	def goto_editor( self ):

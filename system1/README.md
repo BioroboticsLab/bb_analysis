@@ -28,11 +28,14 @@ Since we already have plans to migrate to a revised database there is likely to 
 	* Get the xgb-model.bin and bit-flip-probability.pkl from someone who has already calculated them.
 	  Copy the files to /straight-filtering.
 
-3. [Run the filtering algorithm](./straight-filtering).
+3. Computation
+
+	* [Run the simple filtering algorithm](./straight-filtering).
+	* [A graph filtering algorithm is in the works](./graph-filtering).
 
 4. Evaluation
 
-	* Visually inspect the filtering results. *(to be released)*
+	* [Use the gui](./editor-gui) to visually inspect the filtering results.
 	* [Evaluate](./evaluation) the filtering results against the ground truth.
 
 ## Utils

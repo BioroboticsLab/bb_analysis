@@ -70,7 +70,7 @@ class PathView( QtGui.QGraphicsView ):
 		self.scene().addItem( rect )
 
 
-	def renderTruthPath( self, path ):
+	def render_truth_path( self, path ):
 
 		detections = path.get_sorted_detections()
 
