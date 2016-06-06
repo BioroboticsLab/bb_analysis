@@ -69,9 +69,11 @@ class GraphCompleteness( object ):
 
 	def start( self ):
 
+		database_connection = db.Connection()
+
 		self.path_manager.clear()
 		self.dset_store.clear()
-		self.graph.clear()
+		self.graph.clear( database_connection )
 
 		timestamp = config.START_TIMESTAMP
 		duration  = config.FRAMES_DURATION
@@ -79,8 +81,6 @@ class GraphCompleteness( object ):
 		print 'start validation'
 		print '  host = ' + config.DB_HOST + ', date = ' + timestamp.date_name + ', cam = ' + str(timestamp.cam)
 		print '  start time = ' + timestamp.time_name + ', duration = ' + str(duration) + ' frames'
-
-		database_connection = db.Connection()
 
 		if not timestamp.exists( database_connection ):
 			database_connection.close()
@@ -91,7 +91,7 @@ class GraphCompleteness( object ):
 
 		self.path_manager.set( timestamp, duration )
 		self.graph.set_future_depth( duration )
-		self.graph.build( timestamp )
+		self.graph.build( timestamp, database_connection )
 
 		# computing
 		for x in range( 0, duration ):
@@ -105,7 +105,7 @@ class GraphCompleteness( object ):
 					path = self.path_manager.get_path( truth_id )
 					path.add_detection( d )
 
-			timestamp = timestamp.get_next()
+			timestamp = timestamp.get_next( database_connection )
 			if timestamp is None:
 				break
 

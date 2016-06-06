@@ -93,9 +93,11 @@ class FuturePathScoring( object ):
 
 	def start( self ):
 
+		database_connection = db.Connection()
+
 		self.path_manager.clear()
 		self.dset_store.clear()
-		self.graph.clear()
+		self.graph.clear( database_connection )
 
 		timestamp = config.START_TIMESTAMP
 		duration  = config.FRAMES_DURATION
@@ -103,8 +105,6 @@ class FuturePathScoring( object ):
 		print 'start validation'
 		print '  host = ' + config.DB_HOST + ', date = ' + timestamp.date_name + ', cam = ' + str(timestamp.cam)
 		print '  start time = ' + timestamp.time_name + ', duration = ' + str(duration) + ' frames'
-
-		database_connection = db.Connection()
 
 		if not timestamp.exists( database_connection ):
 			database_connection.close()
@@ -146,7 +146,7 @@ class FuturePathScoring( object ):
 
 
 			print '  processing paths from graph'
-			self.graph.build( timestamp )
+			self.graph.build( timestamp, database_connection )
 			dset = self.dset_store.get( timestamp, database_connection )
 			for i,d in enumerate( dset.detections ):
 				print '\r  %d of %d starts in graph' % (i+1,len(dset.detections)),
@@ -167,10 +167,10 @@ class FuturePathScoring( object ):
 								false_scores.append( score )
 
 				traverse( self.graph, [ d ] )
-			self.graph.remove_timestamp( timestamp )
+			self.graph.remove_timestamp( timestamp, database_connection )
 			print
 
-			timestamp = timestamp.get_next( None )
+			timestamp = timestamp.get_next( database_connection )
 			if timestamp is None:
 				break
 
