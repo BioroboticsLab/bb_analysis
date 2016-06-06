@@ -2,7 +2,7 @@ class ClaimManager( object ):
 
 	def __init__( self ):
 
-		self.claims = []  # list of Claim
+		self.claims = []  # list of Claims
 
 
 	def add_claim( self, claim ):
@@ -19,7 +19,7 @@ class ClaimManager( object ):
 
 		for claim in self.claims:
 			path = claim.path
-			detection = claim.future_path[ 1 ]  # 0 is the last detection of the open path, 1 is the detection we want to assign
+			detection = claim.hypothesis.future_path[ 0 ]
 			if ( not detection.taken ) and ( not path.has_detection_at_timestamp( detection.timestamp ) ):
 				path.add_detection( detection )
 				detection.take()
@@ -31,12 +31,12 @@ class ClaimManager( object ):
 
 
 # Score on a possible path for the future
-class PathClaim( object ):
+class Claim( object ):
 
-	def __init__( self, path, future_path, score ):
+	def __init__( self, path, hypothesis, score ):
 
-		self.path = path                # path object
-		self.future_path = future_path  # list of detections
-		self.score = score              # less is better
+		self.path = path              # path object
+		self.hypothesis = hypothesis  # hypothesis object
+		self.score = score            # less is better
 
 

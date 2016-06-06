@@ -5,8 +5,11 @@ from detections import DetectionSet
 from detections import Detection
 from detections import EmptyDetection
 
+from hypothesis import HypothesisManager
+from hypothesis import Hypothesis
+
 from claims import ClaimManager
-from claims import PathClaim
+from claims import Claim
 
 from paths import PathManager
 from paths import Path

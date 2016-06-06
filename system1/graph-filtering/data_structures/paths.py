@@ -71,14 +71,14 @@ class Path( object ):
 			#candidates = list( set( [ c[0] for c in detection.candidate_ids ] ) )
 
 			for c in candidates:
-				#self.match_ids_sum += aux.int_id_to_binary( c )
+				#self.detections_ids_sum += aux.int_id_to_binary( c )
 				self.detections_ids_sum += aux.weighted_neighbourhood_id( c )
 				self.detections_ids_count += 1
 
 
 	def get_sorted_detections( self ):
 
-		return [ m for t,m in sorted( self.detections.items() ) ]
+		return [ d for t,d in sorted( self.detections.items() ) ]
 
 
 	def get_sorted_unempty_detections( self ):
