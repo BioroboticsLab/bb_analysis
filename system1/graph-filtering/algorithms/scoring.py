@@ -8,6 +8,8 @@ import data_structures as ds
 XGB_MODEL = xgb.Booster( {'nthread':1} )
 XGB_MODEL.load_model( 'xgb-model.bin' )
 
+NEIGHBORS_CACHE = ds.NeighborsCache()
+
 
 def future_path_score( future_path, dset_store, database_connection ):
 
@@ -23,21 +25,7 @@ def future_path_score( future_path, dset_store, database_connection ):
 
 		for (a,b) in aux.pairwise( future_path_without_empties ):
 
-			neighbors50 = 0
-			neighbors100 = 0
-			neighbors200 = 0
-			neighbors300 = 0
-			dset = dset_store.get( b.timestamp, database_connection )
-			for x in dset.detections:
-				euclidian_distance = aux.euclidian_distance( a.position, x.position )
-				if euclidian_distance <= 50:
-					neighbors50 += 1
-				if euclidian_distance <= 100:
-					neighbors100 += 1
-				if euclidian_distance <= 200:
-					neighbors200 += 1
-				if euclidian_distance <= 300:
-					neighbors300 += 1
+			( neighbors50, neighbors100, neighbors200, neighbors300 ) = NEIGHBORS_CACHE.get_distances( a, b.timestamp, dset_store, database_connection )
 
 			euclidian_distance = aux.euclidian_distance( a.position, b.position )
 			frames_gap = a.timestamp.frames_difference( b.timestamp ) - 1
@@ -95,21 +83,7 @@ def connection_scoring( path, hypothesis, dset_store, database_connection ):
 	last_detection = ld = path_unempties[ -1 ]
 	first_future_detection = ffd = future_unempties[ 0 ]
 
-	neighbors50 = 0
-	neighbors100 = 0
-	neighbors200 = 0
-	neighbors300 = 0
-	dset = dset_store.get( ffd.timestamp, database_connection )
-	for x in dset.detections:
-		euclidian_distance = aux.euclidian_distance( ld.position, x.position )
-		if euclidian_distance <= 50:
-			neighbors50 += 1
-		if euclidian_distance <= 100:
-			neighbors100 += 1
-		if euclidian_distance <= 200:
-			neighbors200 += 1
-		if euclidian_distance <= 300:
-			neighbors300 += 1
+	( neighbors50, neighbors100, neighbors200, neighbors300 ) = NEIGHBORS_CACHE.get_distances( ld, ffd.timestamp, dset_store, database_connection )
 
 	euclidian_distance = aux.euclidian_distance( ld.position, ffd.position )
 	frames_gap = ld.timestamp.frames_difference( ffd.timestamp ) - 1
