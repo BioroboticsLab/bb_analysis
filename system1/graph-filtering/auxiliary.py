@@ -28,21 +28,20 @@ def euclidian_distance( v1, v2 ):
 # Convert Integer ID in Numpy array with ones and zeros (binary representation)
 def int_id_to_binary( id ):
 
-	result = []
+	result = np.zeros( 12, dtype = np.int )
+	a = 11
 	while id:
-		result.append( id & 1 )
+		result[ a ] = id & 1
 		id >>= 1
-	while len( result ) < 12:
-		result.append( 0 )
-	result.reverse()
-	return np.array( result )
+		a -= 1
+	return result
 
 
 # Convert Numpy array of ones and zeros (binary representation) into Integer ID
-def binary_id_to_int( binary_id ):
+def binary_id_to_int( id_bin ):
 
 	powers = np.power( 2, range(12) )[::-1]
-	id = int( np.sum( binary_id * powers ) )
+	id = int( np.sum( id_bin * powers ) )
 	return id
 
 
@@ -50,8 +49,11 @@ def binary_id_to_int( binary_id ):
 # and read these three digits as binary number (0-7)
 def get_neighboring_digits_pattern( id_bin, pos ):
 
-	x = np.roll( id_bin, 1-pos )
-	return int( 4*x[0] + 2*x[1] + x[2] )
+	p1 = (pos-1) % 12
+	p2 = pos
+	p3 = (pos+1) % 12
+
+	return int( 4 * id_bin[ p1 ] + 2 * id_bin[ p2 ] + id_bin[ p3 ] )
 
 
 with open( 'bit-flip-probability.pkl', 'rb' ) as myfile:
@@ -61,9 +63,10 @@ with open( 'bit-flip-probability.pkl', 'rb' ) as myfile:
 def weighted_neighbourhood_id( id ):
 
 	result = np.zeros( 12 )
+	id_bin = int_id_to_binary( id )
 
 	for pos in range( 0, 12 ):
-		pattern = get_neighboring_digits_pattern( int_id_to_binary( id ), pos )
+		pattern = get_neighboring_digits_pattern( id_bin, pos )
 		look_up_value = weighted_neighbourhood_array[ pos*8 + pattern ]
 		result[ pos ] = look_up_value
 
