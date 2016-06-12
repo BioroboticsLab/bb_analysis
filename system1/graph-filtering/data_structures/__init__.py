@@ -5,6 +5,7 @@ from detections import DetectionSet
 from detections import Detection
 from detections import EmptyDetection
 
+from cache import XGBCache
 from cache import NeighborsCache
 
 from hypothesis import HypothesisManager
