@@ -71,11 +71,12 @@ def future_path_score( future_path, dset_store, database_connection ):
 
 def connection_scoring( path, hypothesis, dset_store, database_connection ):
 
-	if hypothesis.score is None:
+	hypothesis_score = hypothesis.get_score( dset_store, database_connection )
+	if hypothesis_score is None:
 		return None
 
 	path_unempties = path.get_sorted_unempty_detections()
-	future_unempties = [ d for d in hypothesis.future_path if not d.is_empty() ]
+	future_unempties = hypothesis.get_unempties()
 
 	if len( future_unempties ) < 1:
 		return None
@@ -90,7 +91,7 @@ def connection_scoring( path, hypothesis, dset_store, database_connection ):
 
 	# hamming distance
 	hamming_distance = float( np.sum( np.abs(
-		hypothesis.get_mean_id() - path.determine_average_id_by_mean()
+		hypothesis.get_mean_id() - path.get_mean_id()
 	) ) )
 
 	ld_distinct_ids = list( set( ld.candidate_ids ) )
@@ -123,7 +124,7 @@ def connection_scoring( path, hypothesis, dset_store, database_connection ):
 
 	score = int(( 1 - score)*1000)
 
-	score = ( score + hypothesis.score ) / 2
+	score = ( score + hypothesis_score ) / 2
 
 	return score
 

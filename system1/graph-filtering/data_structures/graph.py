@@ -107,7 +107,6 @@ class Graph( object ):
 					stack.pop()
 			elif len(stack) > 1:
 				hypothesis = ds.Hypothesis( list( stack ) )  # makes copy of stack
-				hypothesis.calculate_score( dset_store, database_connection )
 				hypothesis_manager.add_hypothesis( hypothesis )
 
 		entry_dset = self.dset_store.get_with_one_empty_extra( entry_timestamp, database_connection )

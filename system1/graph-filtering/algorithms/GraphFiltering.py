@@ -68,7 +68,7 @@ class GraphFiltering():
 
 				for d in unempty_detections:
 
-					statusmessage = database_connection.write_updated_id( d, path.determined_id )
+					statusmessage = database_connection.write_updated_id( d, path.get_mean_id() )
 					if statusmessage != "UPDATE 1":
 						print statusmessage
 

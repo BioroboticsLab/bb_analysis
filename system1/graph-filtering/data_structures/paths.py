@@ -22,14 +22,11 @@ class PathManager( object ):
 		self.open_paths.remove( path )
 		self.closed_paths.append( path )
 
-		path.determine_average_id_by_mean()
-
 
 	def close_all_paths( self ):
 
 		for path in self.open_paths:
 			self.closed_paths.append( path )
-			path.determine_average_id_by_mean()
 
 		self.open_paths = []
 
@@ -48,7 +45,14 @@ class Path( object ):
 
 		self.detections_ids_sum = np.zeros( 12 )
 		self.detections_ids_count = 0
-		self.determined_id = None
+
+		self.mean_id = None
+		self.mean_id_needs_update = True
+
+		self.sorted_detections = None
+		self.sorted_detections_need_update = True
+		self.sorted_unempty_detections = None
+		self.sorted_unempty_detections_need_update = True
 
 		self.add_detection( detection0 )
 
@@ -75,31 +79,37 @@ class Path( object ):
 				self.detections_ids_sum += aux.weighted_neighbourhood_id( c )
 				self.detections_ids_count += 1
 
+		self.mean_id_needs_update = True
+		self.sorted_detections_need_update = True
+		self.sorted_unempty_detections_need_update = True
+
 
 	def get_sorted_detections( self ):
 
-		return [ d for t,d in sorted( self.detections.items() ) ]
+		if self.sorted_detections_need_update:
+			self.sorted_detections = [ d for t,d in sorted( self.detections.items() ) ]
+			self.sorted_detections_need_update = False
+
+		return self.sorted_detections
 
 
 	def get_sorted_unempty_detections( self ):
 
-		return [ d for t,d in sorted( self.detections.items() ) if not d.is_empty() ]
+		if self.sorted_unempty_detections_need_update:
+			self.sorted_unempty_detections = [ d for t,d in sorted( self.detections.items() ) if not d.is_empty() ]
+			self.sorted_unempty_detections_need_update = False
+
+		return self.sorted_unempty_detections
 
 
-	# the ids are summed up along the way every time a new match is added,
-	# here we calculate an average id and calculate the hamming distance to that
-	def fast_average_hamming_distance_by_mean( self, id ):
+	def get_mean_id( self ):
 
-		average = self.detections_ids_sum*1.0 / self.detections_ids_count
-		binary_id = aux.int_id_to_binary( id )
-		return float( np.sum( np.abs( binary_id - average ) ) )
+		if self.mean_id_needs_update:
 
+			average = np.round( self.detections_ids_sum*1.0 / self.detections_ids_count )  # keep in mind numpy rounds 0.5 to 0
+			self.mean_id = aux.binary_id_to_int( average )
+			self.mean_id_needs_update = False
 
-	# simply bitwise mean (rounded)
-	def determine_average_id_by_mean( self ):
-
-		average = np.round( self.detections_ids_sum*1.0 / self.detections_ids_count )  # keep in mind numpy rounds 0.5 to 0
-		self.determined_id = aux.binary_id_to_int( average )
-		return self.determined_id
+		return self.mean_id
 
 

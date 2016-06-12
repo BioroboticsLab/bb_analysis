@@ -38,26 +38,42 @@ class Hypothesis( object ):
 
 		self.future_path = fp  # list of detections
 		self.score = None
+		self.mean_id = None
+		self.future_path_unempties = None
 
 
-	def calculate_score( self, dset_store, database_connection ):
+	def get_score( self, dset_store, database_connection ):
 
-		self.score = scoring.future_path_score( self.future_path, dset_store, database_connection )
+		if self.score is None:
+			self.score = scoring.future_path_score( self.future_path, dset_store, database_connection )
+
+		return self.score
 
 
 	def get_mean_id( self ):
 
-		ids_sum = np.zeros( 12 )
-		ids_count = 0
+		if self.mean_id is None:
 
-		for d in self.future_path:
-			if not d.is_empty():
-				candidates = [ c[0] for c in d.candidate_ids ]
-				for c in candidates:
-					ids_sum += aux.weighted_neighbourhood_id( c )
-					ids_count += 1
+			ids_sum = np.zeros( 12 )
+			ids_count = 0
 
-		mean_id = ids_sum*1.0 / ids_count
-		return mean_id
+			for d in self.future_path:
+				if not d.is_empty():
+					candidates = [ c[0] for c in d.candidate_ids ]
+					for c in candidates:
+						ids_sum += aux.weighted_neighbourhood_id( c )
+						ids_count += 1
+
+			self.mean_id = ids_sum*1.0 / ids_count
+
+		return self.mean_id
+
+
+	def get_unempties( self ):
+
+		if self.future_path_unempties is None:
+			self.future_path_unempties = [ d for d in self.future_path if not d.is_empty() ]
+
+		return self.future_path_unempties
 
 
