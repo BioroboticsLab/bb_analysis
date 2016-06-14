@@ -2,12 +2,12 @@ class PathManager( object ):
 
 	def __init__( self ):
 
-		self.paths = []
+		self.paths = {}
 
 
 	def clear( self ):
 
-		self.paths = []
+		self.paths = {}
 
 
 class Path( object ):

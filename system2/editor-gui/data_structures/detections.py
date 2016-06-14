@@ -1,4 +1,4 @@
-# DetectionSetStore, DetectionSet, Detection and EmptyDetection classes, bb_analysis unified version 1.2
+# DetectionSetStore, DetectionSet, Detection and EmptyDetection classes
 
 
 class DetectionSetStore( object ):
@@ -6,50 +6,15 @@ class DetectionSetStore( object ):
 	def __init__( self ):
 
 		self.store = {}    # key: type TimeStamp, value: type DetectionSet
-		self.empties = {}  # one empty detection for every timestamp
 
 
 	def get( self, timestamp ):
 
-		if timestamp not in self.store:
-			close_connection = False
-			if database_connection is None:
-				database_connection = db.Connection()
-				close_connection = True
+		if timestamp in self.store:
+			return self.store[ timestamp ]
 
-			self.store[ timestamp ] = database_connection.get_detections_on_timestamp( timestamp )
-
-			if close_connection:
-				database_connection.close()
-
-		return self.store[ timestamp ]
-
-
-	def get_with_one_empty_extra( self, timestamp ):
-
-		if timestamp not in self.store:
-			close_connection = False
-			if database_connection is None:
-				database_connection = db.Connection()
-				close_connection = True
-
-			self.store[ timestamp ] = database_connection.get_detections_on_timestamp( timestamp )
-			if close_connection:
-				database_connection.close()
-
-		empty_detection = self.get_empty( timestamp )
-		dset = self.store[ timestamp ].clone()
-		dset.detections.append( empty_detection )
-		return dset
-
-
-	def get_empty( self, timestamp ):
-
-		if not timestamp in self.empties:
-			empty_detection = EmptyDetection( timestamp )
-			self.empties[ timestamp ] = empty_detection
-
-		return self.empties[ timestamp ]
+		else:
+			return None
 
 
 	def clear( self ):
@@ -69,13 +34,6 @@ class DetectionSet( object ):
 		self.detections.append( detection )
 
 
-	def clone( self ):
-
-		new_ds = DetectionSet()
-		new_ds.detections = list( self.detections )
-		return new_ds
-
-
 class Detection( object ):
 
 	def __init__( self, detection_id, timestamp, position, localizer_saliency, decoded_id ):
@@ -84,7 +42,7 @@ class Detection( object ):
 		self.timestamp          = timestamp      # type TimeStamp
 		self.position           = position       # numpy array of x- and y-position
 		self.localizer_saliency = localizer_saliency
-		self.decoded_id         = decoded_id
+		self.decoded_id         = decoded_id     # list of floats
 
 		self.taken = False  # to control allocation to paths
 		self.path = None

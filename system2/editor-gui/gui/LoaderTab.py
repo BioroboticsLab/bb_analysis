@@ -101,43 +101,43 @@ class LoaderTab( QtGui.QWidget ):
 		end_time   = datetime( 2016, 6, 7, 11, 10, tzinfo=pytz.utc )
 
 		fnames = repo.iter_fnames( begin=start_time, end=end_time )
-
-		self.data_load_progress.setMaximum( len( list( fnames ) ) )
-		self.app.processEvents()
-
-		print len( list( fnames ) )
-
-		for i,fname in enumerate( fnames ):
+		for fname in fnames:
 
 			frame_container = load_frame_container( fname )
 
 			cam = frame_container.camId
 			previous_timestamp = None
 
-			for j,frame in enumerate( frame_container.frames ):
+			self.data_load_progress.setMaximum( len( frame_container.frames ) )
+			self.app.processEvents()
 
-				timestamp = ds.TimeStamp( j, cam )
+			for i,frame in enumerate( frame_container.frames ):
+
+				#timestamp = frame.timestamp
+				timestamp = ds.TimeStamp( i, cam )
 				timestamp.connect_with_previous( previous_timestamp )
 				previous_timestamp = timestamp
 
 				dset = ds.DetectionSet()
 				dset_store.store[ timestamp ] = dset
 
-				#timestamp = frame.timestamp
 				data = convert_frame_to_numpy( frame )
 
 				for detection_data in data:
 
 					dset.add_detection( ds.Detection(
-						detection_data.idx,
+						detection_data[ 'idx' ],
 						timestamp,
-						numpy.array( [ detection_data.xpos, detection_data.ypos ] ),
-						detection_data.localizerSaliency,
-						detection_data.decodedId
+						np.array( [ detection_data[ 'xpos' ], detection_data[ 'ypos' ] ] ),
+						detection_data[ 'localizerSaliency' ],
+						detection_data[ 'decodedId' ]
 					) )
 
-			self.data_load_progress.setValue( i+1 )
-			self.app.processEvents()
+				self.data_load_progress.setValue( i+1 )
+				self.app.processEvents()
+
+			# break because we only load the first fname
+			break
 
 		self.data_load_button.setDisabled( False )
 		#self.tracks_load_button.setDisabled( False )

@@ -8,11 +8,31 @@ class TimeStamp( object ):
 		self.next = None
 		self.previous = None
 
+		self.date_name = 'dd.MM.yyyy'
+		self.time_name = str( self.frame )
+
+
+	def __hash__( self ):
+
+		return self.frame
+
+
+	def __eq__( self, other ):
+
+		return self.frame == other.frame
+
+
+	def __lt__( self, other ):
+
+		return self.frame < other.frame
+
 
 	def connect_with_previous( self, previous ):
 
 		self.previous = previous
-		previous.next = self
+
+		if previous is not None:
+			previous.next = self
 
 
 	def get_next( self ):

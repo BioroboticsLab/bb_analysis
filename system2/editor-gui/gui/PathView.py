@@ -94,9 +94,9 @@ class PathView( QtGui.QGraphicsView ):
 	# show background image
 	def show_frame( self, timestamp, darken = False ):
 
-		pixmap = QtGui.QPixmap( config.IMG_FOLDER + '/' + timestamp.file_name )
-		pixmapItem = QtGui.QGraphicsPixmapItem( pixmap )
-		self.scene().addItem( pixmapItem )
+		#pixmap = QtGui.QPixmap( config.IMG_FOLDER + '/' + timestamp.file_name )
+		#pixmapItem = QtGui.QGraphicsPixmapItem( pixmap )
+		#self.scene().addItem( pixmapItem )
 		if darken:
 			overlay = QtGui.QGraphicsRectItem( 0, 0, 4000, 3000 )
 			overlay.setBrush( self.overlay_brush )

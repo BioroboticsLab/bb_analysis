@@ -154,11 +154,8 @@ class EditorTab( QtGui.QSplitter ):
 
 			self.previous_button.setDisabled( False )
 			self.next_button.setDisabled( False )
-
-			if self.path_manager.data_source == 0:
-
-				self.new_path_button.setDisabled( False )
-				self.save_button.setDisabled( False )
+			self.new_path_button.setDisabled( False )
+			self.save_button.setDisabled( False )
 
 			timestamps = self.dset_store.store.keys()
 			self.start_timestamp = min( timestamps )
