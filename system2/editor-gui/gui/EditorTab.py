@@ -1,3 +1,4 @@
+import pickle
 import numpy as np
 from PyQt4 import QtGui, QtCore
 
@@ -155,7 +156,7 @@ class EditorTab( QtGui.QSplitter ):
 			self.previous_button.setDisabled( False )
 			self.next_button.setDisabled( False )
 			self.new_path_button.setDisabled( False )
-			#self.save_button.setDisabled( False )
+			self.save_button.setDisabled( False )
 
 			timestamps = self.dset_store.store.keys()
 			self.start_timestamp = min( timestamps )
@@ -172,19 +173,26 @@ class EditorTab( QtGui.QSplitter ):
 
 	def save_truth_data( self ):
 
-		pass
-		# TODO
-		'''if self.path_manager is not None and len( self.path_manager.paths ) > 0:
+		if self.path_manager is not None and len( self.path_manager.paths ) > 0:
 
+			output = {}
 			self.save_progress.setValue( 0 )
 			self.save_progress.setMaximum( len(self.path_manager.paths) )
 
-			for i, key in enumerate( self.path_manager.paths.keys() ):
-				if key is not None:
-					for path in self.path_manager.paths[ key ].values():
-						for t,d in path.detections.items():
-							write_truth_id( d, key )
-				self.save_progress.setValue( i+1 )'''
+			for i, tag_id in enumerate( self.path_manager.paths.keys() ):
+
+				output[ tag_id ] = {}
+				for path_id in self.path_manager.paths[ tag_id ].keys():
+
+					output[ tag_id ][ path_id ] = {}
+					for timestamp, detection in self.path_manager.paths[ tag_id ][ path_id ].detections.items():
+
+						output[ tag_id ][ path_id ][ timestamp.frame ] = detection.detection_id
+
+				self.save_progress.setValue( i+1 )
+
+	 		with open( 'tracks.pkl', 'wb' ) as my_file:
+				pickle.dump( output, my_file )
 
 
 	def add_new_path( self ):
