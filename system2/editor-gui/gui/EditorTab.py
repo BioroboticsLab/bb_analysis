@@ -173,6 +173,7 @@ class EditorTab( QtGui.QSplitter ):
 	def save_truth_data( self ):
 
 		pass
+		# TODO
 		'''if self.path_manager is not None and len( self.path_manager.paths ) > 0:
 
 			self.save_progress.setValue( 0 )
@@ -232,6 +233,8 @@ class EditorTab( QtGui.QSplitter ):
 			path = paths[ 0 ]
 			self.tag_id_lable.setText( 'Tag Id: ' + str(path.tag_id) )
 
+			self.edit_id_button.setDisabled( False )
+
 			if path.tag_id is not None:
 				self.edit_id_button.setText( 'Save Id' )
 				self.tag_view.setTag( path.tag_id )
@@ -254,7 +257,6 @@ class EditorTab( QtGui.QSplitter ):
 			self.tag_view.clear()
 
 
-	# TODO
 	def edit_id( self ):
 
 		if len( self.current_paths ) == 1:
@@ -288,11 +290,18 @@ class EditorTab( QtGui.QSplitter ):
 	def update_path_view( self ):
 
 		self.path_view.clear()
-		self.path_view.show_frame( self.current_timestamp, darken = self.darken_image_checkbox.isChecked() )
+		self.path_view.show_frame(
+			self.current_timestamp,
+			darken = self.darken_image_checkbox.isChecked()
+		)
 		if self.show_path_checkbox.isChecked():
 			for path in self.current_paths:
 				self.path_view.render_truth_path( path )
-		self.path_view.show_detections( self.dset_store.get( self.current_timestamp ), self.current_paths, show_ids = self.show_ids_checkbox.isChecked() )
+		self.path_view.show_detections(
+			self.dset_store.get( self.current_timestamp ),
+			self.current_paths,
+			show_ids = self.show_ids_checkbox.isChecked()
+		)
 
 
 	def show_next( self ):

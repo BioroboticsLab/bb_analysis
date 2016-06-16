@@ -121,7 +121,7 @@ class PathView( QtGui.QGraphicsView ):
 						self.scene().addItem( circle )
 
 					if show_ids:
-						id_text = QtGui.QGraphicsSimpleTextItem( str( d.path.assigned_id ) )
+						id_text = QtGui.QGraphicsSimpleTextItem( str( d.path.tag_id ) )
 						id_text.setPos( d.position[ 0 ]-34, d.position[ 1 ]-60 )
 						id_text.setScale( 2 )
 						id_text.setBrush( self.id_text_white_brush )
