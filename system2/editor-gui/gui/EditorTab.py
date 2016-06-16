@@ -65,7 +65,7 @@ class EditorTab( QtGui.QSplitter ):
 
 		# column 2
 
-		self.path_id_lable = QtGui.QLabel( 'Id:', self )
+		self.tag_id_lable = QtGui.QLabel( 'Tag Id:', self )
 
 		self.tag_view = TagView( self )
 		self.tag_view.setRenderHint( QtGui.QPainter.Antialiasing, True )
@@ -85,7 +85,7 @@ class EditorTab( QtGui.QSplitter ):
 
 		path_details_box = QtGui.QGroupBox( 'Path Details', self )
 		path_details_grid = QtGui.QGridLayout()
-		path_details_grid.addWidget( self.path_id_lable,  0, 0, 1, 1 )
+		path_details_grid.addWidget( self.tag_id_lable,   0, 0, 1, 1 )
 		path_details_grid.addWidget( self.tag_view,       0, 1, 2, 1 )
 		path_details_grid.addWidget( self.edit_id_button, 1, 0, 1, 1 )
 		path_details_grid.addWidget( self.path_table,     2, 0, 1, 2 )
@@ -155,7 +155,7 @@ class EditorTab( QtGui.QSplitter ):
 			self.previous_button.setDisabled( False )
 			self.next_button.setDisabled( False )
 			self.new_path_button.setDisabled( False )
-			self.save_button.setDisabled( False )
+			#self.save_button.setDisabled( False )
 
 			timestamps = self.dset_store.store.keys()
 			self.start_timestamp = min( timestamps )
@@ -172,25 +172,18 @@ class EditorTab( QtGui.QSplitter ):
 
 	def save_truth_data( self ):
 
-		if self.path_manager is not None and len( self.path_manager.paths ) > 0:
+		pass
+		'''if self.path_manager is not None and len( self.path_manager.paths ) > 0:
 
 			self.save_progress.setValue( 0 )
 			self.save_progress.setMaximum( len(self.path_manager.paths) )
-
-			database_connection = db.Connection()
 
 			for i, key in enumerate( self.path_manager.paths.keys() ):
 				if key is not None:
 					for path in self.path_manager.paths[ key ].values():
 						for t,d in path.detections.items():
-							statusmessage = database_connection.write_truth_id( d, key )
-							if statusmessage != "UPDATE 1":
-								print statusmessage
-				self.save_progress.setValue( i+1 )
-			# TODO: delete deleted ids. At the moment we only write and overwrite!
-
-			database_connection.commit()
-			database_connection.close()
+							write_truth_id( d, key )
+				self.save_progress.setValue( i+1 )'''
 
 
 	def add_new_path( self ):
@@ -205,26 +198,26 @@ class EditorTab( QtGui.QSplitter ):
 	def build_path_tree( self ):
 
 		self.path_tree.clear()
-		for k in sorted( self.path_manager.paths.keys() ):
-			key_node = QtGui.QTreeWidgetItem( self.path_tree, [ str( k ) ] )
-			key_node.path_id = k
-			key_node.path_number = None
+		for tag_id in sorted( self.path_manager.paths.keys() ):
+			key_node = QtGui.QTreeWidgetItem( self.path_tree, [ str( tag_id ) ] )
+			key_node.tag_id = tag_id
+			key_node.path_id = None
 
-			for pn, path in self.path_manager.paths[ k ].items():
-				path_node = QtGui.QTreeWidgetItem( key_node, [ 'path_' + str( pn ) ] )
-				path_node.path_id = k
-				path_node.path_number = pn
+			for path_id, path in self.path_manager.paths[ tag_id ].items():
+				path_node = QtGui.QTreeWidgetItem( key_node, [ 'path_' + str( path_id ) ] )
+				path_node.tag_id = tag_id
+				path_node.path_id = path_id
 
 		self.build_path_details( [] )
 
 
 	def select_path( self, item, column ):
 
-		if item.path_number is not None:
-			path = self.path_manager.get_path( item.path_id, item.path_number )
+		if item.path_id is not None:
+			path = self.path_manager.get_path( item.tag_id, item.path_id )
 			self.build_path_details( [ path ] )
 		else:
-			paths = self.path_manager.paths[ item.path_id ].values()
+			paths = self.path_manager.paths[ item.tag_id ].values()
 			self.build_path_details( paths )
 
 
@@ -237,14 +230,11 @@ class EditorTab( QtGui.QSplitter ):
 
 		if len( paths ) == 1:
 			path = paths[ 0 ]
-			self.path_id_lable.setText( 'Id: ' + str(path.assigned_id) )
+			self.tag_id_lable.setText( 'Tag Id: ' + str(path.tag_id) )
 
-			if self.path_manager.data_source == 0:
-				self.edit_id_button.setDisabled( False )
-
-			if path.assigned_id is not None:
+			if path.tag_id is not None:
 				self.edit_id_button.setText( 'Save Id' )
-				self.tag_view.setTag( path.assigned_id )
+				self.tag_view.setTag( path.tag_id )
 			else:
 				self.edit_id_button.setText( 'Assign Id' )
 				self.tag_view.clear()
@@ -258,12 +248,13 @@ class EditorTab( QtGui.QSplitter ):
 				self.path_table.setItem( i, 1, id_item )
 
 		else:
-			self.path_id_lable.setText( 'Id:' )
+			self.tag_id_lable.setText( 'Tag Id:' )
 			self.edit_id_button.setDisabled( True )
 			self.edit_id_button.setText( '' )
 			self.tag_view.clear()
 
 
+	# TODO
 	def edit_id( self ):
 
 		if len( self.current_paths ) == 1:

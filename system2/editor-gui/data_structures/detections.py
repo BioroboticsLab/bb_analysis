@@ -5,7 +5,7 @@ class DetectionSetStore( object ):
 
 	def __init__( self ):
 
-		self.store = {}    # key: type TimeStamp, value: type DetectionSet
+		self.store = {}  # key: type TimeStamp, value: type DetectionSet
 
 
 	def get( self, timestamp ):
