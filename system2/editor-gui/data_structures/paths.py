@@ -1,3 +1,6 @@
+import data_structures as ds
+
+
 class PathManager( object ):
 
 	def __init__( self ):
@@ -59,6 +62,7 @@ class Path( object ):
 		if not detection.timestamp in self.detections:
 			self.detections[ detection.timestamp ] = detection
 			detection.path = self
+			self._fill_with_empties( detection.timestamp )
 
 
 	def add_and_overwrite_detection( self, detection ):
@@ -67,10 +71,12 @@ class Path( object ):
 			self.detections[ detection.timestamp ].path = None
 		self.detections[ detection.timestamp ] = detection
 		detection.path = self
+		self._fill_with_empties( detection.timestamp )
 
 
 	def remove_detection( self, detection ):
 
+		self._remove_empties( detection.timestamp )
 		self.detections.pop( detection.timestamp, None )
 		detection.path = None
 
@@ -78,5 +84,54 @@ class Path( object ):
 	def get_sorted_detections( self ):
 
 		return [ d for t,d in sorted( self.detections.items() ) ]
+
+
+	def get_sorted_positioned_detections( self ):
+
+		return [ d for t,d in sorted( self.detections.items() ) if d.position is not None ]
+
+
+	def _fill_with_empties( self, timestamp ):
+
+		timestamps = sorted( self.detections.keys() )
+		min_timestamp = timestamps[ 0 ]
+		max_timestamp = timestamps[ -1 ]
+
+		if timestamp > min_timestamp:
+			previous = timestamp.get_previous()
+			while not previous in self.detections:
+				empty_detection = ds.EmptyDetection( previous )
+				self.detections[ previous ] = empty_detection
+				empty_detection.path = self
+				previous = previous.get_previous()
+
+		if timestamp < max_timestamp:
+			next = timestamp.get_next()
+			while not next in self.detections:
+				empty_detection = ds.EmptyDetection( next )
+				self.detections[ next ] = empty_detection
+				empty_detection.path = self
+				next = next.get_next()
+
+
+	def _remove_empties( self, timestamp ):
+
+		timestamps = sorted( self.detections.keys() )
+		min_timestamp = timestamps[ 0 ]
+		max_timestamp = timestamps[ -1 ]
+
+		if timestamp == min_timestamp:
+			next = timestamp.get_next()
+			while next in self.detections and self.detections[ next ].is_empty():
+				detection = self.detections.pop( next, None )
+				detection.path = None
+				next = next.get_next()
+
+		if timestamp == max_timestamp:
+			previous = timestamp.get_previous()
+			while previous in self.detections and self.detections[ previous ].is_empty():
+				detection = self.detections.pop( previous, None )
+				detection.path = None
+				previous = previous.get_previous()
 
 

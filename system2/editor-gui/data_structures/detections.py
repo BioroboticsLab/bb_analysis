@@ -1,6 +1,11 @@
 # DetectionSetStore, DetectionSet, Detection and EmptyDetection classes
 
 
+import numpy as np
+
+import auxiliary as aux
+
+
 class DetectionSetStore( object ):
 
 	def __init__( self ):
@@ -48,9 +53,13 @@ class Detection( object ):
 		self.position           = position       # numpy array of x- and y-position
 		self.localizer_saliency = localizer_saliency
 		self.decoded_id         = decoded_id     # list of floats
+		self.decoded_mean       = None
 
 		self.taken = False  # to control allocation to paths
 		self.path = None
+
+		if self.decoded_id is not None:
+			self.decoded_mean = aux.binary_id_to_int( np.round( np.array( self.decoded_id ) ) )
 
 
 	def is_empty( self ):
@@ -68,21 +77,11 @@ class Detection( object ):
 		return str( self.detection_id )
 
 
-	def take( self ):
-
-		self.taken = True
-
-
 class EmptyDetection( Detection ):
 
 	# empty Detection, it only knows on which timestamp it was inserted
 	def __init__( self, timestamp ):
 
 		Detection.__init__( self, None, timestamp, None, None, None )
-
-
-	def take( self ):
-
-		pass  # empty detection can not be assigned exclusively to path
 
 

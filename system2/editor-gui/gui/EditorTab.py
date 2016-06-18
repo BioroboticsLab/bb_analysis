@@ -78,8 +78,14 @@ class EditorTab( QtGui.QSplitter ):
 
 		self.path_table = QtGui.QTableWidget( self )
 		self.path_table.setRowCount( 0 )
-		self.path_table.setColumnCount( 2 )
-		self.path_table.setHorizontalHeaderLabels( [ 'Timestamp', 'Detection Id' ] )
+		self.path_table.setColumnCount( 3 )
+		self.path_table.setColumnWidth( 0, 55 );
+		self.path_table.setColumnWidth( 1, 55 );
+		self.path_table.setColumnWidth( 2, 55 );
+		self.path_table.setHorizontalHeaderLabels( [ 'Detec.', 'Decod.', 'Reada.' ] )
+		header = self.path_table.horizontalHeader()
+		header.setResizeMode( QtGui.QHeaderView.Fixed )
+
 		self.path_table.selectionModel().selectionChanged.connect( self.table_select )
 		self.path_table.setEditTriggers( QtGui.QAbstractItemView.NoEditTriggers )
 		self.path_table.setSelectionBehavior( QtGui.QAbstractItemView.SelectRows )
@@ -253,13 +259,22 @@ class EditorTab( QtGui.QSplitter ):
 				self.edit_id_button.setText( 'Assign Id' )
 				self.tag_view.clear()
 
+			labels = QtCore.QStringList()
+
 			self.path_table.setRowCount( len( path.detections ) )
-			for i, key in enumerate( sorted( path.detections ) ):
-				d = path.detections[ key ]
-				timestamp_item = QtGui.QTableWidgetItem( key.time_name )
-				self.path_table.setItem( i, 0, timestamp_item )
-				id_item = QtGui.QTableWidgetItem( '...' + str( d.detection_id )[-6:] )
-				self.path_table.setItem( i, 1, id_item )
+			for i, timestamp in enumerate( sorted( path.detections.keys() ) ):
+
+				labels.append( timestamp.time_name )
+
+				detection = path.detections[ timestamp ]
+				detection_item = QtGui.QTableWidgetItem( str( detection.detection_id ) )
+				self.path_table.setItem( i, 0, detection_item )
+				decoding_item = QtGui.QTableWidgetItem( str( detection.decoded_mean ) )
+				self.path_table.setItem( i, 1, decoding_item )
+				readability_item = QtGui.QTableWidgetItem( 'NaN' )
+				self.path_table.setItem( i, 2, readability_item )
+
+			self.path_table.setVerticalHeaderLabels( labels );
 
 		else:
 			self.tag_id_lable.setText( 'Tag Id:' )

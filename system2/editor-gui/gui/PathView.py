@@ -71,7 +71,7 @@ class PathView( QtGui.QGraphicsView ):
 
 	def render_truth_path( self, path ):
 
-		detections = path.get_sorted_detections()
+		detections = path.get_sorted_positioned_detections()
 
 		# path lines
 		if len( detections ) > 1:

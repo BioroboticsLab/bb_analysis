@@ -175,9 +175,8 @@ class LoaderTab( QtGui.QWidget ):
 
 						dset = dset_store.get( timestamp )
 						detection = dset.detections[ detection_id ]
+						path.add_detection( detection )
 
-						path.detections[ timestamp ] = detection
-						detection.path = path
 
 			self.tracks_load_progress.setValue( i+1 )
 			self.app.processEvents()
