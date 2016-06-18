@@ -17,6 +17,11 @@ class DetectionSetStore( object ):
 			return None
 
 
+	def get_timestamp( self, frame ):
+
+		return next( ( t for t in self.store.keys() if t.frame == frame ), None )
+
+
 	def clear( self ):
 
 		self.store = {}
@@ -26,12 +31,12 @@ class DetectionSet( object ):
 
 	def __init__( self ):
 
-		self.detections = []  # list of Detections
+		self.detections = {}  # key: detection_id, value: type detection
 
 
 	def add_detection( self, detection ):
 
-		self.detections.append( detection )
+		self.detections[ detection.detection_id ] = detection
 
 
 class Detection( object ):

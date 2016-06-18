@@ -107,7 +107,7 @@ class PathView( QtGui.QGraphicsView ):
 	# show detections with circles
 	def show_detections( self, dset, current_paths = [], show_ids = False ):
 
-		for d in dset.detections:
+		for d in dset.detections.values():
 			if d.position is not None:
 				circle = DetectionEllipse( d, self.ellipse_click_callback )
 

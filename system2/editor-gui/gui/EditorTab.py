@@ -175,24 +175,27 @@ class EditorTab( QtGui.QSplitter ):
 
 		if self.path_manager is not None and len( self.path_manager.paths ) > 0:
 
-			output = {}
+			path_output = {}
 			self.save_progress.setValue( 0 )
 			self.save_progress.setMaximum( len(self.path_manager.paths) )
 
 			for i, tag_id in enumerate( self.path_manager.paths.keys() ):
 
-				output[ tag_id ] = {}
+				path_output[ tag_id ] = {}
 				for path_id in self.path_manager.paths[ tag_id ].keys():
 
-					output[ tag_id ][ path_id ] = {}
+					path_output[ tag_id ][ path_id ] = {}
 					for timestamp, detection in self.path_manager.paths[ tag_id ][ path_id ].detections.items():
 
-						output[ tag_id ][ path_id ][ timestamp.frame ] = detection.detection_id
+						path_output[ tag_id ][ path_id ][ timestamp.frame ] = detection.detection_id
 
 				self.save_progress.setValue( i+1 )
 
 	 		with open( 'tracks.pkl', 'wb' ) as my_file:
-				pickle.dump( output, my_file )
+				pickle.dump( path_output, my_file )
+
+		else:
+			'Warning: nothing to save'
 
 
 	def add_new_path( self ):
@@ -358,7 +361,7 @@ class EditorTab( QtGui.QSplitter ):
 		nearest_distance = float( "inf" )
 
 		dset = self.dset_store.get( timestamp )
-		for d in dset.detections:
+		for d in dset.detections.values():
 			if d.position is not None:
 				distance = np.linalg.norm( d.position - pos )
 				if distance < nearest_distance and distance < limit:

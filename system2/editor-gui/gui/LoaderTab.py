@@ -1,4 +1,5 @@
 import pytz
+import pickle
 import numpy as np
 from datetime import datetime
 from PyQt4 import QtGui, QtCore
@@ -44,12 +45,10 @@ class LoaderTab( QtGui.QWidget ):
 		# tracks box
 
 		tracks_file_lable = QtGui.QLabel( 'File:', self )
-		self.tracks_file_input = QtGui.QLineEdit( 'tracks.csv', self )
-		self.tracks_file_input.setDisabled( True )
+		self.tracks_file_input = QtGui.QLineEdit( 'tracks.pkl', self )
 
 		self.tracks_load_button = QtGui.QPushButton( 'Load', self )
-		#self.tracks_load_button.clicked.connect(  )
-		self.tracks_load_button.setDisabled( True )
+		self.tracks_load_button.clicked.connect( self.load_tracks )
 		self.tracks_load_progress = QtGui.QProgressBar( self )
 		self.tracks_load_progress.setMinimum( 0 )
 
@@ -85,10 +84,7 @@ class LoaderTab( QtGui.QWidget ):
 
 	def load_data( self ):
 
-		self.data_load_button.setDisabled( True )
-		#self.tracks_load_button.setDisabled( True )
-		self.goto_editor_button.setDisabled( True )
-		self.app.processEvents()
+		self.block_inputs( True )
 
 		dset_store = self.parent.dset_store
 		dset_store.clear()
@@ -97,8 +93,8 @@ class LoaderTab( QtGui.QWidget ):
 		path_manager.clear()
 
 		repo = Repository.load( str( self.data_folder_input.text() ) )
-		start_time = datetime( 2016, 6, 7, 11,  3, tzinfo=pytz.utc )
-		end_time   = datetime( 2016, 6, 7, 11, 10, tzinfo=pytz.utc )
+		start_time = datetime( 2015, 9, 18, 9, 36, tzinfo=pytz.utc )
+		end_time   = datetime( 2015, 9, 18, 9, 37, tzinfo=pytz.utc )
 
 		fnames = repo.iter_fnames( begin=start_time, end=end_time )
 		for fname in fnames:
@@ -106,14 +102,20 @@ class LoaderTab( QtGui.QWidget ):
 			frame_container = load_frame_container( fname )
 
 			cam = frame_container.camId
+			#frame_container.fromTimestamp              # already available
+			#frame_container.toTimestamp                # already available
+			#frame_container.dataSources[ 0 ].filename  # already available
+
 			previous_timestamp = None
 
 			self.data_load_progress.setMaximum( len( frame_container.frames ) )
 			self.app.processEvents()
 
-			for i,frame in enumerate( frame_container.frames ):
+			for i, frame in enumerate( frame_container.frames ):
 
-				#timestamp = frame.timestamp
+				#timestamp = frame.timestamp  # not included yet
+				#frame.id                     # not included yet
+
 				timestamp = ds.TimeStamp( i, cam )
 				timestamp.connect_with_previous( previous_timestamp )
 				previous_timestamp = timestamp
@@ -139,9 +141,55 @@ class LoaderTab( QtGui.QWidget ):
 			# break because we only load the first fname
 			break
 
-		self.data_load_button.setDisabled( False )
-		#self.tracks_load_button.setDisabled( False )
-		self.goto_editor_button.setDisabled( False )
+		self.block_inputs( False )
+
+
+	def load_tracks( self ):
+
+		self.block_inputs( True )
+
+		dset_store = self.parent.dset_store
+
+		path_manager = self.parent.path_manager
+		path_manager.clear()
+
+		with open( str( self.tracks_file_input.text() ), 'rb' ) as my_file:
+			paths_input = pickle.load( my_file )
+
+		self.tracks_load_progress.setMaximum( len( paths_input ) )
+		self.app.processEvents()
+
+		for i, tag_id in enumerate( paths_input.keys() ):
+
+			path_manager.paths[ tag_id ] = {}
+
+			for path_id in paths_input[ tag_id ].keys():
+
+				path = ds.Path( tag_id )
+				path_manager.paths[ tag_id ][ path_id ] = path
+
+				for frame, detection_id in paths_input[ tag_id ][ path_id ].items():
+
+					timestamp = dset_store.get_timestamp( frame )
+					if timestamp is not None:
+
+						dset = dset_store.get( timestamp )
+						detection = dset.detections[ detection_id ]
+
+						path.detections[ timestamp ] = detection
+						detection.path = path
+
+			self.tracks_load_progress.setValue( i+1 )
+			self.app.processEvents()
+
+		self.block_inputs( False )
+
+
+	def block_inputs( self, boolean ):
+
+		self.data_load_button.setDisabled( boolean )
+		self.tracks_load_button.setDisabled( boolean )
+		self.goto_editor_button.setDisabled( boolean )
 		self.app.processEvents()
 
 
