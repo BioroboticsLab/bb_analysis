@@ -25,6 +25,15 @@ class EditorTab( QtGui.QSplitter ):
 
 		self.current_paths = []
 
+		red_color  = QtGui.QColor( 255,   0,   0 )
+		grey_color = QtGui.QColor( 204, 204, 204 )
+
+		self.unknown_brush = QtGui.QBrush( grey_color )
+		self.missing_brush = QtGui.QBrush( red_color )
+
+		self.missing_font = QtGui.QFont()
+		self.missing_font.setBold( True )
+
 		self.buildLayout()
 
 
@@ -78,11 +87,12 @@ class EditorTab( QtGui.QSplitter ):
 
 		self.path_table = QtGui.QTableWidget( self )
 		self.path_table.setRowCount( 0 )
-		self.path_table.setColumnCount( 3 )
+		self.path_table.setColumnCount( 4 )
 		self.path_table.setColumnWidth( 0, 55 );
 		self.path_table.setColumnWidth( 1, 55 );
-		self.path_table.setColumnWidth( 2, 55 );
-		self.path_table.setHorizontalHeaderLabels( [ 'Detec.', 'Decod.', 'Reada.' ] )
+		self.path_table.setColumnWidth( 2, 35 );
+		self.path_table.setColumnWidth( 3, 55 );
+		self.path_table.setHorizontalHeaderLabels( [ 'Detec.', 'Decod.', 'Pos.', 'Reada.' ] )
 		header = self.path_table.horizontalHeader()
 		header.setResizeMode( QtGui.QHeaderView.Fixed )
 
@@ -191,7 +201,8 @@ class EditorTab( QtGui.QSplitter ):
 				for path_id in self.path_manager.paths[ tag_id ].keys():
 
 					path_output[ tag_id ][ path_id ] = {}
-					for timestamp, detection in self.path_manager.paths[ tag_id ][ path_id ].detections.items():
+					detections = self.path_manager.paths[ tag_id ][ path_id ].detections
+					for timestamp, detection in detections.items():
 
 						path_output[ tag_id ][ path_id ][ timestamp.frame ] = detection.detection_id
 
@@ -267,12 +278,27 @@ class EditorTab( QtGui.QSplitter ):
 				labels.append( timestamp.time_name )
 
 				detection = path.detections[ timestamp ]
+
 				detection_item = QtGui.QTableWidgetItem( str( detection.detection_id ) )
+				if detection.detection_id is None:
+					detection_item.setForeground( self.unknown_brush )
 				self.path_table.setItem( i, 0, detection_item )
+
 				decoding_item = QtGui.QTableWidgetItem( str( detection.decoded_mean ) )
+				if detection.decoded_mean is None:
+					decoding_item.setForeground( self.unknown_brush )
 				self.path_table.setItem( i, 1, decoding_item )
+
+				if detection.position is not None:
+					position_item = QtGui.QTableWidgetItem( 'Yes' )
+				else:
+					position_item = QtGui.QTableWidgetItem( 'No' )
+					position_item.setForeground( self.missing_brush )
+					position_item.setFont( self.missing_font )
+				self.path_table.setItem( i, 2, position_item )
+
 				readability_item = QtGui.QTableWidgetItem( 'NaN' )
-				self.path_table.setItem( i, 2, readability_item )
+				self.path_table.setItem( i, 3, readability_item )
 
 			self.path_table.setVerticalHeaderLabels( labels );
 

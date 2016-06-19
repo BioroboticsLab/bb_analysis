@@ -54,8 +54,8 @@ class Detection( object ):
 		self.localizer_saliency = localizer_saliency
 		self.decoded_id         = decoded_id     # list of floats
 		self.decoded_mean       = None
+		self.readability        = None
 
-		self.taken = False  # to control allocation to paths
 		self.path = None
 
 		if self.decoded_id is not None:
@@ -65,6 +65,11 @@ class Detection( object ):
 	def is_empty( self ):
 
 		return self.detection_id == None
+
+
+	def is_unpositioned( self ):
+
+		return self.position == None
 
 
 	def __str__( self ):

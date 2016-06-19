@@ -35,28 +35,25 @@ class PathView( QtGui.QGraphicsView ):
 		self.scale_current = 0.17
 		self.scale( self.scale_current, self.scale_current )
 
-		black_color  = QtGui.QColor(   0,   0,   0 )
-		grey_color   = QtGui.QColor( 200, 200, 200 )
-		white_color  = QtGui.QColor( 255, 255, 255 )
-		orange_color = QtGui.QColor( 255, 132,  64 )
-		green_color  = QtGui.QColor(   0, 196,   0 )
-		red_color    = QtGui.QColor( 255,   0,   0 )
-		blue_color   = QtGui.QColor(   0,   0, 255 )
+		black_color      = QtGui.QColor(   0,   0,   0 )
+		white_color      = QtGui.QColor( 255, 255, 255 )
+		orange_color     = QtGui.QColor( 255, 132,  64 )
+		red_color        = QtGui.QColor( 255,   0,   0 )
+		blue_color       = QtGui.QColor(   0,   0, 255 )
 		light_blue_color = QtGui.QColor( 102, 102, 255 )
+
+		#grey_color  = QtGui.QColor( 200, 200, 200 )
+		#green_color = QtGui.QColor(   0, 196,   0 )
 
 		self.no_pen              = QtGui.QPen( QtCore.Qt.NoPen )
 		self.circle_pen          = QtGui.QPen( orange_color, 7.5 )
 		self.circle_selected_pen = QtGui.QPen( blue_color,   10 )
 		self.circle_blocked_pen  = QtGui.QPen( red_color,    10 )
-		self.last_position_pen   = QtGui.QPen( green_color,  10 )
-		self.path_selected_pen   = QtGui.QPen( light_blue_color, 10 )
+		self.path_pen            = QtGui.QPen( light_blue_color, 10 )
 
-		self.area_brush            = QtGui.QBrush( white_color )
-		self.overlay_brush         = QtGui.QBrush( black_color )
-		self.id_text_brush         = QtGui.QBrush( black_color )
-		self.id_text_pending_brush = QtGui.QBrush( grey_color )
-		self.id_text_white_brush   = QtGui.QBrush( white_color )
-		self.point_pending_brush   = QtGui.QBrush( grey_color )
+		self.area_brush    = QtGui.QBrush( white_color )
+		self.overlay_brush = QtGui.QBrush( black_color )
+		self.id_text_brush = QtGui.QBrush( white_color )
 
 
 	# draw background area
@@ -81,7 +78,7 @@ class PathView( QtGui.QGraphicsView ):
 				line = QtGui.QGraphicsLineItem(
 					QtCore.QLineF( startPos[ 0 ], startPos[ 1 ], endPos[ 0 ], endPos[ 1 ] )
 				)
-				line.setPen( self.path_selected_pen )
+				line.setPen( self.path_pen )
 				line.setOpacity( 0.7 )
 				self.scene().addItem( line )
 
@@ -124,7 +121,7 @@ class PathView( QtGui.QGraphicsView ):
 						id_text = QtGui.QGraphicsSimpleTextItem( str( d.path.tag_id ) )
 						id_text.setPos( d.position[ 0 ]-34, d.position[ 1 ]-60 )
 						id_text.setScale( 2 )
-						id_text.setBrush( self.id_text_white_brush )
+						id_text.setBrush( self.id_text_brush )
 						self.scene().addItem( id_text )
 
 				else:

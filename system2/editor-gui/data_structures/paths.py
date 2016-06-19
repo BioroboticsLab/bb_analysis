@@ -122,14 +122,14 @@ class Path( object ):
 
 		if timestamp == min_timestamp:
 			next = timestamp.get_next()
-			while next in self.detections and self.detections[ next ].is_empty():
+			while next in self.detections and self.detections[ next ].is_unpositioned():
 				detection = self.detections.pop( next, None )
 				detection.path = None
 				next = next.get_next()
 
 		if timestamp == max_timestamp:
 			previous = timestamp.get_previous()
-			while previous in self.detections and self.detections[ previous ].is_empty():
+			while previous in self.detections and self.detections[ previous ].is_unpositioned():
 				detection = self.detections.pop( previous, None )
 				detection.path = None
 				previous = previous.get_previous()
