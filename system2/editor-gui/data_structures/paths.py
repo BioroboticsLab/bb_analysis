@@ -3,9 +3,10 @@ import data_structures as ds
 
 class PathManager( object ):
 
-	def __init__( self ):
+	def __init__( self, filename ):
 
 		self.paths = {}  # key: tag id, value: dictionary of paths with key path id
+		self.filename = filename
 
 
 	def get_path( self, tag_id, path_id ):
@@ -44,11 +45,6 @@ class PathManager( object ):
 		path.tag_id = new_tag_id
 
 
-	def clear( self ):
-
-		self.paths = {}
-
-
 class Path( object ):
 
 	def __init__( self, tag_id = None ):
@@ -59,7 +55,15 @@ class Path( object ):
 
 	def add_detection( self, detection ):
 
+		# no detection for this timestamp present
 		if not detection.timestamp in self.detections:
+			self.detections[ detection.timestamp ] = detection
+			detection.path = self
+			self._fill_with_empties( detection.timestamp )
+
+		# or the already present detection is an empty one
+		elif self.detections[ detection.timestamp ].is_empty():
+			self.detections[ detection.timestamp ].path = None
 			self.detections[ detection.timestamp ] = detection
 			detection.path = self
 			self._fill_with_empties( detection.timestamp )
@@ -88,15 +92,19 @@ class Path( object ):
 
 	def get_sorted_positioned_detections( self ):
 
-		return [ d for t,d in sorted( self.detections.items() ) if d.position is not None ]
+		return [ d for t,d in sorted( self.detections.items() ) if not d.is_unpositioned() ]
 
 
+	# we want to emphasize to the user when there are gaps in a path, so we make sure the timestamps
+	# between detections are filled with empty detections
 	def _fill_with_empties( self, timestamp ):
 
 		timestamps = sorted( self.detections.keys() )
 		min_timestamp = timestamps[ 0 ]
 		max_timestamp = timestamps[ -1 ]
 
+		# if there are timestamps smaller than the inserted one, insert empty detections at the
+		# timestamps previous to the inserted timestamp until already existing timestamps are reached
 		if timestamp > min_timestamp:
 			previous = timestamp.get_previous()
 			while not previous in self.detections:
@@ -105,6 +113,8 @@ class Path( object ):
 				empty_detection.path = self
 				previous = previous.get_previous()
 
+		# if there are timestamps bigger than the inserted one, insert empty detections at the
+		# timestamps next to the inserted timestamp until already existing timestamps are reached
 		if timestamp < max_timestamp:
 			next = timestamp.get_next()
 			while not next in self.detections:
@@ -114,21 +124,26 @@ class Path( object ):
 				next = next.get_next()
 
 
+	# before removing a detection remove the detections that were automatically inserted to fill gaps
 	def _remove_empties( self, timestamp ):
 
 		timestamps = sorted( self.detections.keys() )
 		min_timestamp = timestamps[ 0 ]
 		max_timestamp = timestamps[ -1 ]
 
+		# if the soon to be removed timestamp is the minimal one
 		if timestamp == min_timestamp:
 			next = timestamp.get_next()
+			# remove if unpositioned (empty but positioned is fine)
 			while next in self.detections and self.detections[ next ].is_unpositioned():
 				detection = self.detections.pop( next, None )
 				detection.path = None
 				next = next.get_next()
 
+		# if the soon to be removed timestamp is the maximal one
 		if timestamp == max_timestamp:
 			previous = timestamp.get_previous()
+			# remove if unpositioned (empty but positioned is fine)
 			while previous in self.detections and self.detections[ previous ].is_unpositioned():
 				detection = self.detections.pop( previous, None )
 				detection.path = None

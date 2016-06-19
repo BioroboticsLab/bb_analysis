@@ -1,6 +1,5 @@
 from PyQt4 import QtGui
 
-import data_structures as ds
 from LoaderTab import LoaderTab
 from EditorTab import EditorTab
 
@@ -16,8 +15,8 @@ class MainWindow( QtGui.QMainWindow ):
 		self.central_widget = QtGui.QStackedWidget( self )
 		self.setCentralWidget( self.central_widget )
 
-		self.dset_store = ds.DetectionSetStore()
-		self.path_manager = ds.PathManager()
+		self.dset_store = None
+		self.path_manager = None
 
 		self.loader_tab = LoaderTab( self, app )
 		self.editor_tab = EditorTab( self, app )
@@ -33,6 +32,14 @@ class MainWindow( QtGui.QMainWindow ):
 
 
 	def goto_editor( self ):
+
+		if self.dset_store is None:
+			print 'Error: no data folder loaded'
+			return
+
+		if self.path_manager is None:
+			print 'Error: no tracks file loaded'
+			return
 
 		self.editor_tab.activate()
 		self.central_widget.setCurrentWidget( self.editor_tab )

@@ -27,11 +27,6 @@ class DetectionSetStore( object ):
 		return next( ( t for t in self.store.keys() if t.frame == frame ), None )
 
 
-	def clear( self ):
-
-		self.store = {}
-
-
 class DetectionSet( object ):
 
 	def __init__( self ):
@@ -84,7 +79,9 @@ class Detection( object ):
 
 class EmptyDetection( Detection ):
 
-	# empty Detection, it only knows on which timestamp it was inserted
+	# Empty detection, is not associated with any detection from the data, so the detection_id is None.
+	# But it always knows at least on which timestamp it was inserted.
+	# May have position and readability data assigned though.
 	def __init__( self, timestamp ):
 
 		Detection.__init__( self, None, timestamp, None, None, None )

@@ -16,8 +16,8 @@ class EditorTab( QtGui.QSplitter ):
 		self.parent = parent
 		self.app = app
 
-		self.dset_store = self.parent.dset_store
-		self.path_manager = self.parent.path_manager
+		self.dset_store = None
+		self.path_manager = None
 
 		self.start_timestamp = None
 		self.end_timestamp = None
@@ -75,7 +75,8 @@ class EditorTab( QtGui.QSplitter ):
 
 		# column 2
 
-		self.tag_id_lable = QtGui.QLabel( 'Tag Id:', self )
+		self.tag_id_button = QtGui.QPushButton( 'Tag Id:', self )
+		self.tag_id_button.clicked.connect( self.show_main_tag_id )
 
 		self.tag_view = TagView( self )
 		self.tag_view.setRenderHint( QtGui.QPainter.Antialiasing, True )
@@ -102,7 +103,7 @@ class EditorTab( QtGui.QSplitter ):
 
 		path_details_box = QtGui.QGroupBox( 'Path Details', self )
 		path_details_grid = QtGui.QGridLayout()
-		path_details_grid.addWidget( self.tag_id_lable,   0, 0, 1, 1 )
+		path_details_grid.addWidget( self.tag_id_button,  0, 0, 1, 1 )
 		path_details_grid.addWidget( self.tag_view,       0, 1, 2, 1 )
 		path_details_grid.addWidget( self.edit_id_button, 1, 0, 1, 1 )
 		path_details_grid.addWidget( self.path_table,     2, 0, 1, 2 )
@@ -167,6 +168,9 @@ class EditorTab( QtGui.QSplitter ):
 		self.save_button.setDisabled( True )
 		self.edit_id_button.setDisabled( True )
 
+		self.dset_store = self.parent.dset_store
+		self.path_manager = self.parent.path_manager
+
 		if len( self.dset_store.store ) > 0:
 
 			self.previous_button.setDisabled( False )
@@ -204,11 +208,18 @@ class EditorTab( QtGui.QSplitter ):
 					detections = self.path_manager.paths[ tag_id ][ path_id ].detections
 					for timestamp, detection in detections.items():
 
-						path_output[ tag_id ][ path_id ][ timestamp.frame ] = detection.detection_id
+						if not detection.is_unpositioned():
+
+							path_output[ tag_id ][ path_id ][ timestamp.frame ] = (
+								detection.detection_id,
+								detection.position[ 0 ],
+								detection.position[ 1 ],
+								detection.readability
+							)
 
 				self.save_progress.setValue( i+1 )
 
-	 		with open( 'tracks.pkl', 'wb' ) as my_file:
+	 		with open( self.path_manager.filename, 'wb' ) as my_file:
 				pickle.dump( path_output, my_file )
 
 		else:
@@ -259,7 +270,7 @@ class EditorTab( QtGui.QSplitter ):
 
 		if len( paths ) == 1:
 			path = paths[ 0 ]
-			self.tag_id_lable.setText( 'Tag Id: ' + str(path.tag_id) )
+			self.tag_id_button.setText( 'Tag Id: ' + str(path.tag_id) )
 
 			self.edit_id_button.setDisabled( False )
 
@@ -297,16 +308,22 @@ class EditorTab( QtGui.QSplitter ):
 					position_item.setFont( self.missing_font )
 				self.path_table.setItem( i, 2, position_item )
 
-				readability_item = QtGui.QTableWidgetItem( 'NaN' )
+				readability_item = QtGui.QTableWidgetItem( str( detection.readability ) )
 				self.path_table.setItem( i, 3, readability_item )
 
 			self.path_table.setVerticalHeaderLabels( labels );
 
 		else:
-			self.tag_id_lable.setText( 'Tag Id:' )
+			self.tag_id_button.setText( 'Tag Id:' )
 			self.edit_id_button.setDisabled( True )
 			self.edit_id_button.setText( '' )
 			self.tag_view.clear()
+
+
+	def show_main_tag_id( self ):
+
+		if len( self.current_paths ) > 0:
+			self.tag_view.setTag( self.current_paths[ 0 ].tag_id )
 
 
 	def edit_id( self ):
@@ -328,8 +345,9 @@ class EditorTab( QtGui.QSplitter ):
 
 		if selected.indexes():
 			row = selected.indexes()[ 0 ].row()
-			timestamp = sorted( self.current_paths[ 0 ].detections )[ row ]
-			self.set_current_timestamp( timestamp )
+			detection = self.current_paths[ 0 ].get_sorted_detections()[ row ]
+			self.tag_view.setTag( detection.decoded_mean )
+			self.set_current_timestamp( detection.timestamp )
 
 
 	def set_current_timestamp( self, timestamp ):

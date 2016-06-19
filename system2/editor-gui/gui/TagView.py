@@ -30,9 +30,12 @@ class TagView( QtGui.QGraphicsView ):
 		self.update_view()
 
 
-	def setTag( self, id ):
+	def setTag( self, tag_id ):
 
-		self.binary_id = aux.int_id_to_binary( id )
+		if tag_id is None:
+			self.binary_id = None
+		else:
+			self.binary_id = aux.int_id_to_binary( tag_id )
 		self.update_view()
 
 
