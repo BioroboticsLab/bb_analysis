@@ -24,7 +24,7 @@ class PathManager( object ):
 			self.paths[ tag_id ][ new_path_id ] = path
 
 
-	def move( self, path, new_tag_id ):
+	def move_path( self, path, new_tag_id ):
 
 		old_tag_id = path.tag_id
 
@@ -43,6 +43,31 @@ class PathManager( object ):
 			self.paths[ new_tag_id ][ new_path_id ] = path
 
 		path.tag_id = new_tag_id
+
+
+	def combine_paths( self, tag_id ):
+
+		paths = self.paths[ tag_id ]
+		main_path_id, main_path = paths.items()[ 0 ]
+		for path_id, path in paths.items()[1:]:
+			for detection in path.detections.values():
+				detection.path = None
+				main_path.add_detection( detection )
+			path.detections = {}
+			paths[ path_id ] = None
+		self.paths[ tag_id ] = { main_path_id: main_path }
+
+
+	def remove_path( self, path ):
+
+		path.clear()
+
+		paths = self.paths[ path.tag_id ]
+		path_id = paths.keys()[ paths.values().index( path ) ]
+		paths.pop( path_id, None )
+
+		if len( self.paths[ path.tag_id ] ) == 0:
+			self.paths.pop( path.tag_id, None )
 
 
 class Path( object ):
@@ -83,6 +108,13 @@ class Path( object ):
 		self._remove_empties( detection.timestamp )
 		self.detections.pop( detection.timestamp, None )
 		detection.path = None
+
+
+	def clear( self ):
+
+		for detection in self.detections.values():
+			detection.path = None
+		self.detections = {}
 
 
 	def get_sorted_detections( self ):

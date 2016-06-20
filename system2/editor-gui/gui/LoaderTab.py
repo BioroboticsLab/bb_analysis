@@ -46,26 +46,26 @@ class LoaderTab( QtGui.QWidget ):
 		data_box.setLayout( data_grid )
 
 
-		# tracks box
+		# paths box
 
-		tracks_file_lable = QtGui.QLabel( 'File:', self )
-		self.tracks_file_input = QtGui.QLineEdit( 'tracks.pkl', self )
+		paths_file_lable = QtGui.QLabel( 'File:', self )
+		self.paths_file_input = QtGui.QLineEdit( 'paths.pkl', self )
 
-		self.tracks_load_button = QtGui.QPushButton( 'Load', self )
-		self.tracks_load_button.clicked.connect( self.load_tracks )
-		self.tracks_load_progress = QtGui.QProgressBar( self )
-		self.tracks_load_progress.setMinimum( 0 )
+		self.paths_load_button = QtGui.QPushButton( 'Load', self )
+		self.paths_load_button.clicked.connect( self.load_tracks )
+		self.paths_load_progress = QtGui.QProgressBar( self )
+		self.paths_load_progress.setMinimum( 0 )
 
-		self.tracks_load_lable = QtGui.QLabel( '', self )
+		self.paths_load_lable = QtGui.QLabel( '', self )
 
-		tracks_box = QtGui.QGroupBox( 'Tracks', self )
-		tracks_grid = QtGui.QGridLayout( self )
-		tracks_grid.addWidget( tracks_file_lable,         0, 0, 1, 1 )
-		tracks_grid.addWidget( self.tracks_file_input,    0, 1, 1, 1 )
-		tracks_grid.addWidget( self.tracks_load_button,   1, 0, 1, 1 )
-		tracks_grid.addWidget( self.tracks_load_progress, 1, 1, 1, 1 )
-		tracks_grid.addWidget( self.tracks_load_lable,    2, 0, 1, 2 )
-		tracks_box.setLayout( tracks_grid )
+		paths_box = QtGui.QGroupBox( 'Paths', self )
+		paths_grid = QtGui.QGridLayout( self )
+		paths_grid.addWidget( paths_file_lable,         0, 0, 1, 1 )
+		paths_grid.addWidget( self.paths_file_input,    0, 1, 1, 1 )
+		paths_grid.addWidget( self.paths_load_button,   1, 0, 1, 1 )
+		paths_grid.addWidget( self.paths_load_progress, 1, 1, 1, 1 )
+		paths_grid.addWidget( self.paths_load_lable,    2, 0, 1, 2 )
+		paths_box.setLayout( paths_grid )
 
 
 		# to editor
@@ -78,7 +78,7 @@ class LoaderTab( QtGui.QWidget ):
 
 		v_box = QtGui.QVBoxLayout()
 		v_box.addWidget( data_box )
-		v_box.addWidget( tracks_box )
+		v_box.addWidget( paths_box )
 		v_box.addWidget( self.goto_editor_button )
 		v_box.addStretch( 1 )
 
@@ -93,8 +93,6 @@ class LoaderTab( QtGui.QWidget ):
 
 		foldername = str( self.data_folder_input.text() )
 		if not os.path.exists( foldername ):
-			self.data_load_lable.setText( 'Folder not found' )
-			self.app.processEvents()
 			print 'Error: folder not found'
 			return
 
@@ -102,6 +100,8 @@ class LoaderTab( QtGui.QWidget ):
 
 		self.parent.dset_store = ds.DetectionSetStore()
 		self.parent.path_manager = None
+		self.paths_load_progress.setValue( 0 )
+		self.paths_load_lable.setText( '' )
 
 		dset_store = self.parent.dset_store
 
@@ -169,7 +169,6 @@ class LoaderTab( QtGui.QWidget ):
 	def load_tracks( self ):
 
 		if self.parent.dset_store is None:
-			self.tracks_load_lable.setText( 'no data folder loaded' )
 			print 'Error: no data folder loaded'
 			return
 
@@ -177,7 +176,7 @@ class LoaderTab( QtGui.QWidget ):
 
 		dset_store = self.parent.dset_store
 
-		filename = str( self.tracks_file_input.text() )
+		filename = str( self.paths_file_input.text() )
 		self.parent.path_manager = ds.PathManager( filename )
 		path_manager = self.parent.path_manager
 
@@ -188,7 +187,7 @@ class LoaderTab( QtGui.QWidget ):
 				with open( filename, 'rb' ) as my_file:
 					paths_input = pickle.load( my_file )
 
-				self.tracks_load_progress.setMaximum( len( paths_input ) )
+				self.paths_load_progress.setMaximum( len( paths_input ) )
 				self.app.processEvents()
 
 				for i, tag_id in enumerate( paths_input.keys() ):
@@ -220,10 +219,10 @@ class LoaderTab( QtGui.QWidget ):
 									path.add_detection( detection )
 
 
-					self.tracks_load_progress.setValue( i+1 )
+					self.paths_load_progress.setValue( i+1 )
 					self.app.processEvents()
 
-				self.tracks_load_lable.setText( str( len( paths_input ) ) + ' paths loaded' )
+				self.paths_load_lable.setText( str( len( paths_input ) ) + ' paths loaded' )
 				self.app.processEvents()
 
 			except:
@@ -232,9 +231,9 @@ class LoaderTab( QtGui.QWidget ):
 
 		else:
 
-			self.tracks_load_progress.setMaximum( 1 )
-			self.tracks_load_progress.setValue( 1 )
-			self.tracks_load_lable.setText( 'will write to new file' )
+			self.paths_load_progress.setMaximum( 1 )
+			self.paths_load_progress.setValue( 1 )
+			self.paths_load_lable.setText( 'will write to new file' )
 			self.app.processEvents()
 
 		self.block_inputs( False )
@@ -243,7 +242,7 @@ class LoaderTab( QtGui.QWidget ):
 	def block_inputs( self, boolean ):
 
 		self.data_load_button.setDisabled( boolean )
-		self.tracks_load_button.setDisabled( boolean )
+		self.paths_load_button.setDisabled( boolean )
 		self.goto_editor_button.setDisabled( boolean )
 		self.app.processEvents()
 

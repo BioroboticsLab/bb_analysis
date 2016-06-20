@@ -53,6 +53,12 @@ class EditorTab( QtGui.QSplitter ):
 		self.new_path_button = QtGui.QPushButton( 'Add new Path', self )
 		self.new_path_button.clicked.connect( self.add_new_path )
 
+		self.combine_paths_button = QtGui.QPushButton( 'Combine', self )
+		self.combine_paths_button.clicked.connect( self.combine_paths )
+
+		self.remove_path_button = QtGui.QPushButton( 'Remove', self )
+		self.remove_path_button.clicked.connect( self.remove_path )
+
 		self.save_button = QtGui.QPushButton( 'Save', self )
 		self.save_button.clicked.connect( self.save_truth_data )
 
@@ -60,9 +66,11 @@ class EditorTab( QtGui.QSplitter ):
 		self.save_progress.setMinimum( 0 )
 
 		edit_grid = QtGui.QGridLayout()
-		edit_grid.addWidget( self.new_path_button, 0, 0, 1, 2 )
-		edit_grid.addWidget( self.save_button,     1, 0, 1, 1 )
-		edit_grid.addWidget( self.save_progress,   1, 1, 1, 1 )
+		edit_grid.addWidget( self.new_path_button,      0, 0, 1, 2 )
+		edit_grid.addWidget( self.combine_paths_button, 1, 0, 1, 1 )
+		edit_grid.addWidget( self.remove_path_button,   1, 1, 1, 1 )
+		edit_grid.addWidget( self.save_button,          3, 0, 1, 1 )
+		edit_grid.addWidget( self.save_progress,        3, 1, 1, 1 )
 
 		column_1_layout = QtGui.QVBoxLayout()
 		column_1_layout.addWidget( self.goto_loader_button )
@@ -77,6 +85,7 @@ class EditorTab( QtGui.QSplitter ):
 
 		self.tag_id_button = QtGui.QPushButton( 'Tag Id:', self )
 		self.tag_id_button.clicked.connect( self.show_main_tag_id )
+		self.tag_id_button.setDisabled( True )
 
 		self.tag_view = TagView( self )
 		self.tag_view.setRenderHint( QtGui.QPainter.Antialiasing, True )
@@ -85,6 +94,7 @@ class EditorTab( QtGui.QSplitter ):
 
 		self.edit_id_button = QtGui.QPushButton( '', self )
 		self.edit_id_button.clicked.connect( self.edit_id )
+		self.edit_id_button.setDisabled( True )
 
 		self.path_table = QtGui.QTableWidget( self )
 		self.path_table.setRowCount( 0 )
@@ -162,21 +172,10 @@ class EditorTab( QtGui.QSplitter ):
 
 	def activate( self ):
 
-		self.previous_button.setDisabled( True )
-		self.next_button.setDisabled( True )
-		self.new_path_button.setDisabled( True )
-		self.save_button.setDisabled( True )
-		self.edit_id_button.setDisabled( True )
-
 		self.dset_store = self.parent.dset_store
 		self.path_manager = self.parent.path_manager
 
 		if len( self.dset_store.store ) > 0:
-
-			self.previous_button.setDisabled( False )
-			self.next_button.setDisabled( False )
-			self.new_path_button.setDisabled( False )
-			self.save_button.setDisabled( False )
 
 			timestamps = self.dset_store.store.keys()
 			self.start_timestamp = min( timestamps )
@@ -223,7 +222,7 @@ class EditorTab( QtGui.QSplitter ):
 				pickle.dump( path_output, my_file )
 
 		else:
-			'Warning: nothing to save'
+			print 'Warning: nothing to save'
 
 
 	def add_new_path( self ):
@@ -233,6 +232,22 @@ class EditorTab( QtGui.QSplitter ):
 			self.path_manager.add_path( new_path )
 			self.build_path_tree()
 			self.build_path_details( [ new_path ] )
+
+
+	def combine_paths( self ):
+
+		if len( self.current_paths ) > 1:
+			tag_id = self.current_paths[ 0 ].tag_id
+			self.path_manager.combine_paths( tag_id )
+			self.build_path_tree()
+
+
+	def remove_path( self ):
+
+		for path in self.current_paths:
+			self.path_manager.remove_path( path )
+
+		self.build_path_tree()
 
 
 	def build_path_tree( self ):
@@ -275,11 +290,13 @@ class EditorTab( QtGui.QSplitter ):
 			self.edit_id_button.setDisabled( False )
 
 			if path.tag_id is not None:
+				self.tag_id_button.setDisabled( False )
 				self.edit_id_button.setText( 'Save Id' )
-				self.tag_view.setTag( path.tag_id )
 			else:
+				self.tag_id_button.setDisabled( True )
 				self.edit_id_button.setText( 'Assign Id' )
-				self.tag_view.clear()
+
+			self.tag_view.set_tag( path.tag_id )
 
 			labels = QtCore.QStringList()
 
@@ -315,6 +332,7 @@ class EditorTab( QtGui.QSplitter ):
 
 		else:
 			self.tag_id_button.setText( 'Tag Id:' )
+			self.tag_id_button.setDisabled( True )
 			self.edit_id_button.setDisabled( True )
 			self.edit_id_button.setText( '' )
 			self.tag_view.clear()
@@ -323,7 +341,7 @@ class EditorTab( QtGui.QSplitter ):
 	def show_main_tag_id( self ):
 
 		if len( self.current_paths ) > 0:
-			self.tag_view.setTag( self.current_paths[ 0 ].tag_id )
+			self.tag_view.set_tag( self.current_paths[ 0 ].tag_id )
 
 
 	def edit_id( self ):
@@ -332,12 +350,12 @@ class EditorTab( QtGui.QSplitter ):
 			current_path = self.current_paths[ 0 ]
 			if self.tag_view.binary_id is not None:
 				new_id = aux.binary_id_to_int( self.tag_view.binary_id )
-				self.path_manager.move( current_path, new_id )
+				self.path_manager.move_path( current_path, new_id )
 				memorize_path = current_path
 				self.build_path_tree()
 				self.build_path_details( [ memorize_path ] )
 			else:
-				self.tag_view.setTag( 0 )
+				self.tag_view.set_tag( 0 )
 				self.edit_id_button.setText( 'Save Id' )
 
 
@@ -346,7 +364,7 @@ class EditorTab( QtGui.QSplitter ):
 		if selected.indexes():
 			row = selected.indexes()[ 0 ].row()
 			detection = self.current_paths[ 0 ].get_sorted_detections()[ row ]
-			self.tag_view.setTag( detection.decoded_mean )
+			self.tag_view.set_tag( detection.decoded_mean )
 			self.set_current_timestamp( detection.timestamp )
 
 
