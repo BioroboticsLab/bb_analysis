@@ -145,9 +145,9 @@ class LoaderTab( QtGui.QWidget ):
 						dset.add_detection( ds.Detection(
 							detection_data[ 'idx' ],
 							timestamp,
-							np.array( [ detection_data[ 'xpos' ], detection_data[ 'ypos' ] ] ),
+							np.array( [ detection_data[ 'ypos' ], detection_data[ 'xpos' ] ] ),  # rotated, otherwise will be portrait orientation
 							detection_data[ 'localizerSaliency' ],
-							detection_data[ 'decodedId' ]
+							detection_data[ 'decodedId' ][::-1]  # reversed, we want least significant bit last
 						) )
 
 					self.data_load_progress.setValue( i+1 )

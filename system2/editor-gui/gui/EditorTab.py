@@ -47,8 +47,10 @@ class EditorTab( QtGui.QSplitter ):
 
 		# path tree
 		self.path_tree = QtGui.QTreeWidget( self )
-		self.path_tree.setHeaderLabels( [ "Paths" ] )
+		self.path_tree.setHeaderLabels( [ 'Tag Id', 'Paths' ] )
 		self.path_tree.itemClicked.connect( self.select_path )
+		self.path_tree.setColumnWidth( 0, 110 )
+		self.path_tree.setColumnWidth( 1, 50 )
 
 		self.new_path_button = QtGui.QPushButton( 'Add new Path', self )
 		self.new_path_button.clicked.connect( self.add_new_path )
@@ -254,12 +256,15 @@ class EditorTab( QtGui.QSplitter ):
 
 		self.path_tree.clear()
 		for tag_id in sorted( self.path_manager.paths.keys() ):
-			key_node = QtGui.QTreeWidgetItem( self.path_tree, [ str( tag_id ) ] )
-			key_node.tag_id = tag_id
-			key_node.path_id = None
+			tag_id_node = QtGui.QTreeWidgetItem( self.path_tree, [
+				str( tag_id ),
+				str( len( self.path_manager.paths[ tag_id ] ) )
+			] )
+			tag_id_node.tag_id = tag_id
+			tag_id_node.path_id = None
 
 			for path_id, path in self.path_manager.paths[ tag_id ].items():
-				path_node = QtGui.QTreeWidgetItem( key_node, [ 'path_' + str( path_id ) ] )
+				path_node = QtGui.QTreeWidgetItem( tag_id_node, [ 'path_' + str( path_id ), '' ] )
 				path_node.tag_id = tag_id
 				path_node.path_id = path_id
 
