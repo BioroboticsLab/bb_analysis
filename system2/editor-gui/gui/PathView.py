@@ -89,11 +89,12 @@ class PathView( QtGui.QGraphicsView ):
 
 
 	# show background image
-	def show_frame( self, timestamp, darken = False ):
+	def show_frame( self, timestamp, images_folder, darken = False ):
 
-		#pixmap = QtGui.QPixmap( config.IMG_FOLDER + '/' + timestamp.file_name )
-		#pixmapItem = QtGui.QGraphicsPixmapItem( pixmap )
-		#self.scene().addItem( pixmapItem )
+		# Convert: avconv -i video.mp3 $filename%03d.jpg
+		pixmap = QtGui.QPixmap( '%s/%03d.jpg' % ( images_folder, timestamp.frame+1 ) )
+		pixmapItem = QtGui.QGraphicsPixmapItem( pixmap )
+		self.scene().addItem( pixmapItem )
 		if darken:
 			overlay = QtGui.QGraphicsRectItem( 0, 0, 4000, 3000 )
 			overlay.setBrush( self.overlay_brush )

@@ -385,6 +385,7 @@ class EditorTab( QtGui.QSplitter ):
 		self.path_view.clear()
 		self.path_view.show_frame(
 			self.current_timestamp,
+			self.parent.images_folder,
 			darken = self.darken_image_checkbox.isChecked()
 		)
 		if self.show_path_checkbox.isChecked():

@@ -46,6 +46,18 @@ class LoaderTab( QtGui.QWidget ):
 		data_box.setLayout( data_grid )
 
 
+		# images box
+
+		images_folder_lable = QtGui.QLabel( 'Folder:', self )
+		self.images_folder_input = QtGui.QLineEdit( 'images', self )
+
+		images_box = QtGui.QGroupBox( 'Images', self )
+		images_grid = QtGui.QGridLayout( self )
+		images_grid.addWidget( images_folder_lable,      0, 0, 1, 1 )
+		images_grid.addWidget( self.images_folder_input, 0, 1, 1, 1 )
+		images_box.setLayout( images_grid )
+
+
 		# paths box
 
 		paths_file_lable = QtGui.QLabel( 'File:', self )
@@ -78,6 +90,7 @@ class LoaderTab( QtGui.QWidget ):
 
 		v_box = QtGui.QVBoxLayout()
 		v_box.addWidget( data_box )
+		v_box.addWidget( images_box )
 		v_box.addWidget( paths_box )
 		v_box.addWidget( self.goto_editor_button )
 		v_box.addStretch( 1 )
@@ -249,6 +262,7 @@ class LoaderTab( QtGui.QWidget ):
 
 	def goto_editor( self ):
 
+		self.parent.images_folder = str( self.images_folder_input.text() )
 		self.parent.goto_editor()
 
 
