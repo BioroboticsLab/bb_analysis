@@ -17,7 +17,6 @@ class MainWindow( QtGui.QMainWindow ):
 
 		self.dset_store = None
 		self.path_manager = None
-		self.images_folder = None
 
 		self.loader_tab = LoaderTab( self, app )
 		self.editor_tab = EditorTab( self, app )

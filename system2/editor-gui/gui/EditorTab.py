@@ -220,8 +220,8 @@ class EditorTab( QtGui.QSplitter ):
 
 				self.save_progress.setValue( i+1 )
 
-	 		with open( self.path_manager.filename, 'wb' ) as my_file:
-				pickle.dump( path_output, my_file )
+	 		with open( self.path_manager.filename, 'wb' ) as paths_file:
+				pickle.dump( path_output, paths_file )
 
 		else:
 			print 'Warning: nothing to save'
@@ -385,7 +385,6 @@ class EditorTab( QtGui.QSplitter ):
 		self.path_view.clear()
 		self.path_view.show_frame(
 			self.current_timestamp,
-			self.parent.images_folder,
 			darken = self.darken_image_checkbox.isChecked()
 		)
 		if self.show_path_checkbox.isChecked():

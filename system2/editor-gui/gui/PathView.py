@@ -1,6 +1,7 @@
 import numpy as np
 from PyQt4 import QtGui, QtCore
 
+import config
 from DetectionEllipse import DetectionEllipse
 
 
@@ -46,9 +47,9 @@ class PathView( QtGui.QGraphicsView ):
 		#green_color = QtGui.QColor(   0, 196,   0 )
 
 		self.no_pen              = QtGui.QPen( QtCore.Qt.NoPen )
-		self.circle_pen          = QtGui.QPen( orange_color, 7.5 )
-		self.circle_selected_pen = QtGui.QPen( blue_color,   10 )
-		self.circle_blocked_pen  = QtGui.QPen( red_color,    10 )
+		self.circle_pen          = QtGui.QPen( orange_color,    7.5 )
+		self.circle_selected_pen = QtGui.QPen( blue_color,       10 )
+		self.circle_blocked_pen  = QtGui.QPen( red_color,        10 )
 		self.path_pen            = QtGui.QPen( light_blue_color, 10 )
 
 		self.area_brush    = QtGui.QBrush( white_color )
@@ -89,10 +90,10 @@ class PathView( QtGui.QGraphicsView ):
 
 
 	# show background image
-	def show_frame( self, timestamp, images_folder, darken = False ):
+	def show_frame( self, timestamp, darken = False ):
 
 		# Convert: avconv -i video.mp3 $filename%03d.jpg
-		pixmap = QtGui.QPixmap( '%s/%03d.jpg' % ( images_folder, timestamp.frame+1 ) )
+		pixmap = QtGui.QPixmap( '%s/%03d.jpg' % ( config.IMG_FOLDER, timestamp.frame+1 ) )
 		pixmapItem = QtGui.QGraphicsPixmapItem( pixmap )
 		self.scene().addItem( pixmapItem )
 		if darken:
