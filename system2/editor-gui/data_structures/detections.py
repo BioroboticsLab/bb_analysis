@@ -59,12 +59,12 @@ class Detection( object ):
 
 	def is_empty( self ):
 
-		return self.detection_id == None
+		return self.detection_id is None
 
 
 	def is_unpositioned( self ):
 
-		return self.position == None
+		return self.position is None
 
 
 	def __str__( self ):
