@@ -101,6 +101,7 @@ class EditorTab( QtGui.QSplitter ):
 		self.edit_id_button.setDisabled( True )
 
 		self.path_table = QtGui.QTableWidget( self )
+		self.path_table.keyPressEvent = self.on_key_press
 		self.path_table.setRowCount( 0 )
 		self.path_table.setColumnCount( 4 )
 		self.path_table.setColumnWidth( 0, 55 );
@@ -111,7 +112,7 @@ class EditorTab( QtGui.QSplitter ):
 		header = self.path_table.horizontalHeader()
 		header.setResizeMode( QtGui.QHeaderView.Fixed )
 
-		self.path_table.selectionModel().selectionChanged.connect( self.table_select )
+		self.path_table.selectionModel().selectionChanged.connect( self.on_table_select )
 		self.path_table.setEditTriggers( QtGui.QAbstractItemView.NoEditTriggers )
 		self.path_table.setSelectionBehavior( QtGui.QAbstractItemView.SelectRows )
 
@@ -341,6 +342,8 @@ class EditorTab( QtGui.QSplitter ):
 
 			self.path_table.setVerticalHeaderLabels( labels );
 
+			self.table_select_row()
+
 		else:
 			self.tag_id_button.setText( 'Tag Id:' )
 			self.tag_id_button.setDisabled( True )
@@ -370,7 +373,7 @@ class EditorTab( QtGui.QSplitter ):
 				self.edit_id_button.setText( 'Save Id' )
 
 
-	def table_select( self, selected, deselected ):
+	def on_table_select( self, selected, deselected ):
 
 		if selected.indexes():
 			row = selected.indexes()[ 0 ].row()
@@ -380,9 +383,26 @@ class EditorTab( QtGui.QSplitter ):
 			self.activate_editing()
 
 
+	def table_select_row( self ):
+
+		timestamp = self.current_timestamp
+
+		if len( self.current_paths ) == 1:
+			current_path = self.current_paths[ 0 ]
+
+			if timestamp in current_path.detections:  # and we know now get_first_timestamp() isn't None
+				table_row_index = timestamp.frame - current_path.get_first_timestamp().frame
+				self.path_table.selectRow( table_row_index )
+			else:
+				self.path_table.clearSelection()
+
+
 	def set_current_timestamp( self, timestamp ):
 
 		self.current_timestamp = timestamp
+
+		self.table_select_row()
+
 		self.time_lable.setText( timestamp.time_name )
 		self.update_path_view()
 
@@ -433,7 +453,11 @@ class EditorTab( QtGui.QSplitter ):
 				self.activate_editing()
 
 
-	def activate_editing( self ):
+	def activate_editing( self, boolean = None ):
+
+		if boolean is not None:
+			self.editing_active = boolean
+			return
 
 		if len( self.current_paths ) != 1:
 			self.editing_active = False
@@ -455,14 +479,27 @@ class EditorTab( QtGui.QSplitter ):
 
 		if event.key() == QtCore.Qt.Key_A:
 			self.show_previous()
+		elif event.key() == QtCore.Qt.Key_Left:
+			self.show_previous()
+		elif event.key() == QtCore.Qt.Key_Up:
+			self.show_previous()
+
 		elif event.key() == QtCore.Qt.Key_D:
+			self.show_next()
+		elif event.key() == QtCore.Qt.Key_Right:
+			self.show_next()
+		elif event.key() == QtCore.Qt.Key_Down:
 			self.show_next()
 		elif event.key() == QtCore.Qt.Key_Space:
 			self.show_next()
-		elif event.key() == QtCore.Qt.Key_E:
+
+		elif event.key() == QtCore.Qt.Key_Delete:
 			self.delete_current_detection()
 		elif event.key() == QtCore.Qt.Key_Enter:
 			pass  # TODO stop editing
+		elif event.key() == QtCore.Qt.Key_Escape:
+			pass  # TODO stop editing without applying the last
+
 		elif event.key() == QtCore.Qt.Key_1:
 			pass  # TODO set readability
 		elif event.key() == QtCore.Qt.Key_2:
@@ -488,6 +525,7 @@ class EditorTab( QtGui.QSplitter ):
 			if len( self.current_paths ) == 1:
 				self.current_paths[ 0 ].add_and_overwrite_detection( nearest )
 				self.build_path_details( self.current_paths )
+				self.activate_editing( True )
 
 		else:
 			pass # TODO insert position

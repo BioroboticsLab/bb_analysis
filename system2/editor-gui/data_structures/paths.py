@@ -105,10 +105,19 @@ class Path( object ):
 
 	def remove_detection( self, detection ):
 
-		self._remove_empties( detection.timestamp )
-		self.detections.pop( detection.timestamp, None )
-		# TODO: insert empty if necessary
+		timestamp = detection.timestamp
+
+		# remove detection
+		self.detections.pop( timestamp, None )
 		detection.path = None
+
+		# replace with empty detection
+		empty_detection = ds.EmptyDetection( timestamp )
+		self.detections[ timestamp ] = empty_detection
+		empty_detection.path = self
+
+		# remove unnecessary empty detections
+		self._remove_empties( timestamp )
 
 
 	def clear( self ):
@@ -126,6 +135,14 @@ class Path( object ):
 	def get_sorted_positioned_detections( self ):
 
 		return [ d for t,d in sorted( self.detections.items() ) if not d.is_unpositioned() ]
+
+
+	def get_first_timestamp( self ):
+
+		if len( self.detections ) > 0:
+			return [ t for t,d in sorted( self.detections.items() ) ][ 0 ]
+		else:
+			return None
 
 
 	# we want to emphasize to the user when there are gaps in a path, so we make sure the timestamps
@@ -157,27 +174,35 @@ class Path( object ):
 				next = next.get_next()
 
 
-	# before removing a detection remove the detections that were automatically inserted to fill gaps
+	# remove unnecessary empty detections that were inserted to fill gaps
 	def _remove_empties( self, timestamp ):
 
 		timestamps = sorted( self.detections.keys() )
 		min_timestamp = timestamps[ 0 ]
 		max_timestamp = timestamps[ -1 ]
 
-		# if the soon to be removed timestamp is the minimal one
+		# the replaced timestamp is the minimal one
 		if timestamp == min_timestamp:
-			next = timestamp.get_next()
+			next = timestamp
 			# remove if unpositioned (empty but positioned is fine)
-			while next in self.detections and self.detections[ next ].is_unpositioned():
+			while (
+				    next is not None
+				and next in self.detections
+				and self.detections[ next ].is_unpositioned()
+			):
 				detection = self.detections.pop( next, None )
 				detection.path = None
 				next = next.get_next()
 
-		# if the soon to be removed timestamp is the maximal one
+		# the replaced timestamp is the maximal one
 		if timestamp == max_timestamp:
-			previous = timestamp.get_previous()
+			previous = timestamp
 			# remove if unpositioned (empty but positioned is fine)
-			while previous in self.detections and self.detections[ previous ].is_unpositioned():
+			while (
+				    previous is not None
+				and previous in self.detections
+				and self.detections[ previous ].is_unpositioned()
+			):
 				detection = self.detections.pop( previous, None )
 				detection.path = None
 				previous = previous.get_previous()
