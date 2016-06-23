@@ -25,6 +25,8 @@ class EditorTab( QtGui.QSplitter ):
 
 		self.current_paths = []
 
+		self.editing_active = False
+
 		red_color  = QtGui.QColor( 255,   0,   0 )
 		grey_color = QtGui.QColor( 204, 204, 204 )
 
@@ -131,7 +133,7 @@ class EditorTab( QtGui.QSplitter ):
 		# column 3
 
 		# view
-		self.path_view = PathView( self, self.on_ellipse_click, self.on_key_press )
+		self.path_view = PathView( self, None, self.on_key_press, self.on_mouse_move )
 		self.path_view.setRenderHint( QtGui.QPainter.Antialiasing, True )
 
 		# view buttons
@@ -234,6 +236,7 @@ class EditorTab( QtGui.QSplitter ):
 			self.path_manager.add_path( new_path )
 			self.build_path_tree()
 			self.build_path_details( [ new_path ] )
+			self.activate_editing()
 
 
 	def combine_paths( self ):
@@ -269,6 +272,7 @@ class EditorTab( QtGui.QSplitter ):
 				path_node.path_id = path_id
 
 		self.build_path_details( [] )
+		self.activate_editing()
 
 
 	def select_path( self, item, column ):
@@ -279,6 +283,8 @@ class EditorTab( QtGui.QSplitter ):
 		else:
 			paths = self.path_manager.paths[ item.tag_id ].values()
 			self.build_path_details( paths )
+
+		self.activate_editing()
 
 
 	def build_path_details( self, paths ):
@@ -371,6 +377,7 @@ class EditorTab( QtGui.QSplitter ):
 			detection = self.current_paths[ 0 ].get_sorted_detections()[ row ]
 			self.tag_view.set_tag( detection.decoded_mean )
 			self.set_current_timestamp( detection.timestamp )
+			self.activate_editing()
 
 
 	def set_current_timestamp( self, timestamp ):
@@ -402,32 +409,7 @@ class EditorTab( QtGui.QSplitter ):
 		next_timestamp = self.current_timestamp.get_next()
 		if next_timestamp is not None and not self.end_timestamp < next_timestamp:
 			self.set_current_timestamp( next_timestamp )
-
-
-	def show_next_with_auto_add( self ):
-
-		# set next timestamp
-		next_timestamp = self.current_timestamp.get_next()
-		if next_timestamp is not None and not self.end_timestamp < next_timestamp:
-			self.set_current_timestamp( next_timestamp )
-		else:
-			return
-
-		# check if a path is selected for editing
-		if len( self.current_paths ) != 1:
-			return
-
-		mouse_pos_widget = self.path_view.mapFromGlobal( QtGui.QCursor.pos() )
-		mouse_pos_scene = self.path_view.mapToScene( mouse_pos_widget )
-		mouse_pos = np.array( [ mouse_pos_scene.x(), mouse_pos_scene.y() ] )
-		mouse_pos = np.clip( mouse_pos, 0, [4000,3000] )
-
-		# get nearest detection within a limit
-		auto_detection = self.get_nearest_detection( self.current_timestamp, mouse_pos, 70 )
-		if auto_detection is not None and auto_detection.path is None:  # not already assigned
-			if not self.current_timestamp in self.current_paths[ 0 ].detections:
-				self.current_paths[ 0 ].add_and_overwrite_detection( auto_detection )
-				self.build_path_details( self.current_paths )
+			self.activate_editing()
 
 
 	def show_previous( self ):
@@ -435,6 +417,92 @@ class EditorTab( QtGui.QSplitter ):
 		previous_timestamp = self.current_timestamp.get_previous()
 		if previous_timestamp is not None and not previous_timestamp < self.start_timestamp:
 			self.set_current_timestamp( previous_timestamp )
+			self.activate_editing()
+
+
+	def delete_current_detection( self ):
+
+		if len( self.current_paths ) == 1:
+
+			current_path = self.current_paths[ 0 ]
+			if self.current_timestamp in current_path.detections:
+				detection = current_path.detections[ self.current_timestamp ]
+				current_path.remove_detection( detection )
+
+				self.build_path_details( [ current_path ] )
+				self.activate_editing()
+
+
+	def activate_editing( self ):
+
+		if len( self.current_paths ) != 1:
+			self.editing_active = False
+			return
+
+		current_path = self.current_paths[ 0 ]
+
+		if self.current_timestamp in current_path.detections:
+			detection = current_path.detections[ self.current_timestamp ]
+			if not detection.is_unpositioned():
+				self.editing_active = False
+				return
+
+		self.editing_active = True
+		self.on_mouse_move()
+
+
+	def on_key_press( self, event ):
+
+		if event.key() == QtCore.Qt.Key_A:
+			self.show_previous()
+		elif event.key() == QtCore.Qt.Key_D:
+			self.show_next()
+		elif event.key() == QtCore.Qt.Key_Space:
+			self.show_next()
+		elif event.key() == QtCore.Qt.Key_E:
+			self.delete_current_detection()
+		elif event.key() == QtCore.Qt.Key_Enter:
+			pass  # TODO stop editing
+		elif event.key() == QtCore.Qt.Key_1:
+			pass  # TODO set readability
+		elif event.key() == QtCore.Qt.Key_2:
+			pass  # TODO set readability
+		elif event.key() == QtCore.Qt.Key_3:
+			pass  # TODO set readability
+
+
+	def on_mouse_move( self ):
+
+		if not self.editing_active:
+			return
+
+		mouse_pos_widget = self.path_view.mapFromGlobal( QtGui.QCursor.pos() )
+		mouse_pos_scene = self.path_view.mapToScene( mouse_pos_widget )
+		mouse_pos = np.array( [ mouse_pos_scene.x(), mouse_pos_scene.y() ] )
+		#mouse_pos = np.clip( mouse_pos, 0, [4000,3000] )
+
+		# get nearest detection within a limit
+		nearest = self.get_nearest_detection( self.current_timestamp, mouse_pos, 70 )
+		if nearest is not None and nearest.path is None:  # not already assigned
+
+			if len( self.current_paths ) == 1:
+				self.current_paths[ 0 ].add_and_overwrite_detection( nearest )
+				self.build_path_details( self.current_paths )
+
+		else:
+			pass # TODO insert position
+
+			'''
+			# clicked on detection not belonging to any path, then add to path
+			if detection.path is None:
+				self.current_paths[ 0 ].add_and_overwrite_detection( detection )
+				self.build_path_details( self.current_paths )
+
+			# clicked on detection from active path, then remove from path
+			elif detection.path is self.current_paths[ 0 ]:
+				self.current_paths[ 0 ].remove_detection( detection )
+				self.build_path_details( self.current_paths )
+			'''
 
 
 	def get_nearest_detection( self, timestamp, pos, limit ):
@@ -450,30 +518,5 @@ class EditorTab( QtGui.QSplitter ):
 					nearest = d
 					nearest_distance = distance
 		return nearest
-
-
-	def on_key_press( self, event ):
-
-		if event.key() == QtCore.Qt.Key_A:
-			self.show_previous()
-		elif event.key() == QtCore.Qt.Key_D:
-			self.show_next()
-		elif event.key() == QtCore.Qt.Key_Space:
-			self.show_next_with_auto_add()
-
-
-	def on_ellipse_click( self, detection ):
-
-		if len( self.current_paths ) == 1:
-
-			# clicked on detection not belonging to any path, then add to path
-			if detection.path is None:
-				self.current_paths[ 0 ].add_and_overwrite_detection( detection )
-				self.build_path_details( self.current_paths )
-
-			# clicked on detection from active path, then remove from path
-			elif detection.path is self.current_paths[ 0 ]:
-				self.current_paths[ 0 ].remove_detection( detection )
-				self.build_path_details( self.current_paths )
 
 

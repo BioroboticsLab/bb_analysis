@@ -107,6 +107,7 @@ class Path( object ):
 
 		self._remove_empties( detection.timestamp )
 		self.detections.pop( detection.timestamp, None )
+		# TODO: insert empty if necessary
 		detection.path = None
 
 

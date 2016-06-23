@@ -21,11 +21,19 @@ class PathScene( QtGui.QGraphicsScene ):
 
 class PathView( QtGui.QGraphicsView ):
 
-	def __init__( self, parent, ellipse_click_callback = None, key_callback = None ):
+	def __init__(
+			self, parent,
+			ellipse_click_callback = None,
+			key_callback           = None,
+			mouse_move_callback    = None
+		):
 
 		QtGui.QGraphicsView.__init__( self, parent )
 
+		self.setMouseTracking( True )
+
 		self.ellipse_click_callback = ellipse_click_callback
+		self.mouse_move_callback = mouse_move_callback
 		self.setScene( PathScene( key_callback, self ) )
 		self.setSceneRect( 0, 0, 4000, 3000 )
 
@@ -140,5 +148,10 @@ class PathView( QtGui.QGraphicsView ):
 		self.scale_current = scale_new
 		self.scale( scale_apply, scale_apply )
 		#self.centerOn( scale_center )
+
+
+	def mouseMoveEvent( self, event ):
+
+		self.mouse_move_callback()
 
 
