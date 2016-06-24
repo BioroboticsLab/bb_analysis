@@ -13,6 +13,7 @@ class EditorTab( QtGui.QSplitter ):
 	def __init__( self, parent, app ):
 
 		QtGui.QWidget.__init__( self, parent )
+		self.keyPressEvent = self.on_key_press
 		self.parent = parent
 		self.app = app
 
@@ -489,8 +490,6 @@ class EditorTab( QtGui.QSplitter ):
 		elif event.key() == QtCore.Qt.Key_Right:
 			self.show_next()
 		elif event.key() == QtCore.Qt.Key_Down:
-			self.show_next()
-		elif event.key() == QtCore.Qt.Key_Space:
 			self.show_next()
 
 		elif event.key() == QtCore.Qt.Key_Delete:
