@@ -49,7 +49,9 @@ class Detection( object ):
 		self.localizer_saliency = localizer_saliency
 		self.decoded_id         = decoded_id     # list of floats
 		self.decoded_mean       = None
-		self.readability        = None
+
+		# different from the bb_binary schema because we need easily accessible keys
+		self.readability        = 1  # 1 == completely, 2 == partially, 3 == none
 
 		self.path = None
 

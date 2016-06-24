@@ -500,11 +500,12 @@ class EditorTab( QtGui.QSplitter ):
 			pass  # TODO stop editing without applying the last
 
 		elif event.key() == QtCore.Qt.Key_1:
-			pass  # TODO set readability
+			self.set_readability( 1 )
 		elif event.key() == QtCore.Qt.Key_2:
-			pass  # TODO set readability
+			self.set_readability( 2 )
 		elif event.key() == QtCore.Qt.Key_3:
-			pass  # TODO set readability
+			self.set_readability( 3	 )
+			# TODO then it shouldn't be possible to select a detection from the decoder
 
 
 	def on_mouse_move( self ):
@@ -540,6 +541,16 @@ class EditorTab( QtGui.QSplitter ):
 				self.current_paths[ 0 ].remove_detection( detection )
 				self.build_path_details( self.current_paths )
 			'''
+
+
+	def set_readability( self, n ):
+
+		if len( self.current_paths ) == 1:
+			current_path = self.current_paths[ 0 ]
+			if self.current_timestamp in current_path.detections:
+				detection = current_path.detections[ self.current_timestamp ]
+				detection.readability = n
+				self.build_path_details( self.current_paths )
 
 
 	def get_nearest_detection( self, timestamp, pos, limit ):
