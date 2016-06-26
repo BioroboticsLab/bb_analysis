@@ -538,19 +538,41 @@ class EditorTab( QtGui.QSplitter ):
 		if not self.editing_active:
 			return
 
+		if len( self.current_paths ) != 1:
+			return
+
+		path = self.current_paths[ 0 ]
+		timestamp = self.current_timestamp
+
+		readability = 1
+		if timestamp in path.detections:
+			readability = path.detections[ timestamp ].readability
+
 		mouse_pos_widget = self.path_view.mapFromGlobal( QtGui.QCursor.pos() )
 		mouse_pos_scene = self.path_view.mapToScene( mouse_pos_widget )
 		mouse_pos = np.array( [ mouse_pos_scene.x(), mouse_pos_scene.y() ] )
-		#mouse_pos = np.clip( mouse_pos, 0, [4000,3000] )
 
 		# get nearest detection within a limit
-		nearest = self.get_nearest_detection( self.current_timestamp, mouse_pos, 70 )
-		if nearest is not None and nearest.path is None:  # not already assigned
+		nearest = self.get_nearest_detection( timestamp, mouse_pos, 70 )
 
-			if len( self.current_paths ) == 1:
-				self.current_paths[ 0 ].add_and_overwrite_detection( nearest )
-				self.build_path_details( self.current_paths )
-				self.activate_editing( True )
+		if (
+			    nearest is not None   # there is a detection nearby
+			and nearest.path == path  # it already belongs to the current path
+			and readability != 3      # we haven't marked it as unreadable before
+		):
+
+			pass
+
+		elif ( 
+			    nearest is not None   # there is a detection nearby
+			and nearest.path is None  # it's not already assigned
+			and readability != 3      # we haven't marked it as unreadable before
+		):
+
+			path.add_and_overwrite_detection( nearest )
+			nearest.readability = readability
+			self.build_path_details( self.current_paths )
+			self.activate_editing( True )
 
 		# else insert empty detection with position information
 		elif (
@@ -558,32 +580,32 @@ class EditorTab( QtGui.QSplitter ):
 			and mouse_pos[ 1 ] >= 0 and mouse_pos[ 1 ] <= 3000
 		):
 
-			if len( self.current_paths ) == 1:
-				path = self.current_paths[ 0 ]
-				timestamp = self.current_timestamp
+			# already has detection at this timestamp
+			if timestamp in path.detections:
 
-				# already has detection at this timestamp
-				if timestamp in path.detections:
-
-					detection = path.detections[ timestamp ]
-					# if the already present detection is one from the decoder data we have to
-					# replace it with an empty one before we can set the position from the mouse
-					if not detection.is_empty():
-						detection = ds.EmptyDetection( timestamp )
-						path.add_and_overwrite_detection( detection )
-
-				# no detection at this timestamp, insert new empty one
-				else:
+				detection = path.detections[ timestamp ]
+				# if the already present detection is one from the decoder data we have to
+				# replace it with an empty one before we can set the position from the mouse
+				if not detection.is_empty():
 					detection = ds.EmptyDetection( timestamp )
-					path.add_detection( detection )
+					detection.readability = readability
+					path.add_and_overwrite_detection( detection )
 
-				detection.position = mouse_pos
+			# no detection at this timestamp, insert new empty one
+			else:
+				detection = ds.EmptyDetection( timestamp )
+				detection.readability = readability
+				path.add_detection( detection )
 
-				self.build_path_details( self.current_paths )
-				self.activate_editing( True )
+			detection.position = mouse_pos
+
+			self.build_path_details( self.current_paths )
+			self.activate_editing( True )
 
 
 	def set_readability( self, n ):
+
+		editing = self.editing_active
 
 		if len( self.current_paths ) == 1:
 			current_path = self.current_paths[ 0 ]
@@ -591,6 +613,8 @@ class EditorTab( QtGui.QSplitter ):
 				detection = current_path.detections[ self.current_timestamp ]
 				detection.readability = n
 				self.build_path_details( self.current_paths )
+				self.activate_editing( editing )
+				self.on_mouse_move()
 
 
 	def get_nearest_detection( self, timestamp, pos, limit ):
