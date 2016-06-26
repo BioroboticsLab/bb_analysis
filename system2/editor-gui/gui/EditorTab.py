@@ -549,6 +549,15 @@ class EditorTab( QtGui.QSplitter ):
 			readability = path.detections[ timestamp ].readability
 
 		mouse_pos_widget = self.path_view.mapFromGlobal( QtGui.QCursor.pos() )
+		widget_x = mouse_pos_widget.x()
+		widget_y = mouse_pos_widget.y()
+
+		if (
+			   widget_x < 0 or widget_x > self.path_view.width()
+			or widget_y < 0 or widget_y > self.path_view.height()
+		):
+			return
+
 		mouse_pos_scene = self.path_view.mapToScene( mouse_pos_widget )
 		mouse_pos = np.array( [ mouse_pos_scene.x(), mouse_pos_scene.y() ] )
 
