@@ -476,7 +476,6 @@ class EditorTab( QtGui.QSplitter ):
 				current_path.remove_detection( detection )
 
 				self.build_path_details( [ current_path ] )
-				self.activate_editing()
 
 
 	def activate_editing( self, boolean = None ):
@@ -519,10 +518,12 @@ class EditorTab( QtGui.QSplitter ):
 
 		elif event.key() == QtCore.Qt.Key_Delete:
 			self.delete_current_detection()
-		elif event.key() == QtCore.Qt.Key_Enter:
-			pass  # TODO stop editing
+			self.activate_editing()
+		elif event.key() == QtCore.Qt.Key_Return:
+			self.activate_editing( False )
 		elif event.key() == QtCore.Qt.Key_Escape:
-			pass  # TODO stop editing without applying the last
+			self.delete_current_detection()
+			self.activate_editing( False )
 
 		elif event.key() == QtCore.Qt.Key_1:
 			self.set_readability( 1 )
@@ -530,7 +531,6 @@ class EditorTab( QtGui.QSplitter ):
 			self.set_readability( 2 )
 		elif event.key() == QtCore.Qt.Key_3:
 			self.set_readability( 3	 )
-			# TODO then it shouldn't be possible to select a detection from the decoder
 
 
 	def on_mouse_move( self ):
