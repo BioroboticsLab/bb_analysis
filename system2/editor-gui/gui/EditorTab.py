@@ -139,33 +139,44 @@ class EditorTab( QtGui.QSplitter ):
 		self.path_view.setRenderHint( QtGui.QPainter.Antialiasing, True )
 
 		# view buttons
+		self.time_lable = QtGui.QLabel( self )
+
 		self.previous_button = QtGui.QPushButton( 'Previous', self )
 		self.previous_button.clicked.connect( self.show_previous )
-		self.time_lable = QtGui.QLabel( self )
+
 		self.next_button = QtGui.QPushButton( 'Next', self )
 		self.next_button.clicked.connect( self.show_next )
+
+		self.show_path_checkbox = QtGui.QCheckBox( 'Show Path', self )
+		self.show_path_checkbox.setChecked( True )
+		self.show_path_checkbox.clicked.connect( self.update_path_view )
 
 		self.show_ids_checkbox = QtGui.QCheckBox( 'Show IDs', self )
 		self.show_ids_checkbox.clicked.connect( self.update_path_view )
 
+		self.show_image_checkbox = QtGui.QCheckBox( 'Show Image', self )
+		self.show_image_checkbox.setChecked( True )
+		self.show_image_checkbox.clicked.connect( self.update_path_view )
+
 		self.darken_image_checkbox = QtGui.QCheckBox( 'Darken Image', self )
 		self.darken_image_checkbox.clicked.connect( self.update_path_view )
 
-		self.show_path_checkbox = QtGui.QCheckBox( 'Show Path', self )
-		self.show_path_checkbox.clicked.connect( self.update_path_view )
+		view_buttons_grid = QtGui.QGridLayout()
+		view_buttons_grid.addWidget( self.time_lable,            0, 0, 1, 2 )
+		view_buttons_grid.addWidget( self.previous_button,       1, 0, 1, 1 )
+		view_buttons_grid.addWidget( self.next_button,           1, 1, 1, 1 )
+		view_buttons_grid.addWidget( self.show_path_checkbox,    0, 2, 1, 1 )
+		view_buttons_grid.addWidget( self.show_ids_checkbox,     0, 3, 1, 1 )
+		view_buttons_grid.addWidget( self.show_image_checkbox,   1, 2, 1, 1 )
+		view_buttons_grid.addWidget( self.darken_image_checkbox, 1, 3, 1, 1 )
 
-		view_buttons_box = QtGui.QHBoxLayout()
-		view_buttons_box.addWidget( self.previous_button )
-		view_buttons_box.addWidget( self.time_lable )
-		view_buttons_box.addWidget( self.next_button )
-		view_buttons_box.addWidget( self.show_ids_checkbox )
-		view_buttons_box.addWidget( self.darken_image_checkbox )
-		view_buttons_box.addWidget( self.show_path_checkbox )
-		view_buttons_box.addStretch( 1 )
+		view_footer_layout = QtGui.QHBoxLayout()
+		view_footer_layout.addLayout( view_buttons_grid )
+		view_footer_layout.addStretch( 1 )
 
 		column_3_layout = QtGui.QVBoxLayout()
 		column_3_layout.addWidget( self.path_view )
-		column_3_layout.addLayout( view_buttons_box )
+		column_3_layout.addLayout( view_footer_layout )
 
 		column_3_widget = QtGui.QWidget( self )
 		column_3_widget.setLayout( column_3_layout )
@@ -404,25 +415,39 @@ class EditorTab( QtGui.QSplitter ):
 
 		self.table_select_row()
 
-		self.time_lable.setText( timestamp.time_name )
+		self.time_lable.setText( 'frame: ' + timestamp.time_name )
 		self.update_path_view()
 
 
 	def update_path_view( self ):
 
 		self.path_view.clear()
-		self.path_view.show_frame(
-			self.current_timestamp,
-			darken = self.darken_image_checkbox.isChecked()
-		)
+
+		if self.show_image_checkbox.isChecked():
+			self.path_view.render_frame(
+				self.current_timestamp,
+				darken = self.darken_image_checkbox.isChecked()
+			)
+		else:
+			self.path_view.render_area()
+
 		if self.show_path_checkbox.isChecked():
 			for path in self.current_paths:
-				self.path_view.render_truth_path( path )
-		self.path_view.show_detections(
+				self.path_view.render_path( path )
+
+		self.path_view.render_detections(
 			self.dset_store.get( self.current_timestamp ),
 			self.current_paths,
 			show_ids = self.show_ids_checkbox.isChecked()
 		)
+
+		if len( self.current_paths ) == 1:
+			path = self.current_paths[ 0 ]
+			timestamp = self.current_timestamp
+			if timestamp in path.detections:
+				detection = path.detections[ timestamp ]
+				if detection.is_empty() and not detection.is_unpositioned():
+					self.path_view.render_position( detection.position )
 
 
 	def show_next( self ):
@@ -527,20 +552,35 @@ class EditorTab( QtGui.QSplitter ):
 				self.build_path_details( self.current_paths )
 				self.activate_editing( True )
 
-		else:
-			pass # TODO insert position
+		# else insert empty detection with position information
+		elif (
+			    mouse_pos[ 0 ] >= 0 and mouse_pos[ 0 ] <= 4000
+			and mouse_pos[ 1 ] >= 0 and mouse_pos[ 1 ] <= 3000
+		):
 
-			'''
-			# clicked on detection not belonging to any path, then add to path
-			if detection.path is None:
-				self.current_paths[ 0 ].add_and_overwrite_detection( detection )
-				self.build_path_details( self.current_paths )
+			if len( self.current_paths ) == 1:
+				path = self.current_paths[ 0 ]
+				timestamp = self.current_timestamp
 
-			# clicked on detection from active path, then remove from path
-			elif detection.path is self.current_paths[ 0 ]:
-				self.current_paths[ 0 ].remove_detection( detection )
+				# already has detection at this timestamp
+				if timestamp in path.detections:
+
+					detection = path.detections[ timestamp ]
+					# if the already present detection is one from the decoder data we have to
+					# replace it with an empty one before we can set the position from the mouse
+					if not detection.is_empty():
+						detection = ds.EmptyDetection( timestamp )
+						path.add_and_overwrite_detection( detection )
+
+				# no detection at this timestamp, insert new empty one
+				else:
+					detection = ds.EmptyDetection( timestamp )
+					path.add_detection( detection )
+
+				detection.position = mouse_pos
+
 				self.build_path_details( self.current_paths )
-			'''
+				self.activate_editing( True )
 
 
 	def set_readability( self, n ):

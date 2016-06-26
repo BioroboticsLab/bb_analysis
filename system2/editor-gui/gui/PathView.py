@@ -50,23 +50,23 @@ class PathView( QtGui.QGraphicsView ):
 		red_color        = QtGui.QColor( 255,   0,   0 )
 		blue_color       = QtGui.QColor(   0,   0, 255 )
 		light_blue_color = QtGui.QColor( 102, 102, 255 )
-
-		#grey_color  = QtGui.QColor( 200, 200, 200 )
-		#green_color = QtGui.QColor(   0, 196,   0 )
+		green_color      = QtGui.QColor(   0, 196,   0 )
+		grey_color       = QtGui.QColor( 220, 220, 220 )
 
 		self.no_pen              = QtGui.QPen( QtCore.Qt.NoPen )
 		self.circle_pen          = QtGui.QPen( orange_color,    7.5 )
 		self.circle_selected_pen = QtGui.QPen( blue_color,       10 )
 		self.circle_blocked_pen  = QtGui.QPen( red_color,        10 )
+		self.position_pen        = QtGui.QPen( green_color,      10 )
 		self.path_pen            = QtGui.QPen( light_blue_color, 10 )
 
-		self.area_brush    = QtGui.QBrush( white_color )
+		self.area_brush    = QtGui.QBrush( grey_color )
 		self.overlay_brush = QtGui.QBrush( black_color )
 		self.id_text_brush = QtGui.QBrush( white_color )
 
 
 	# draw background area
-	def drawArea( self ):
+	def render_area( self ):
 
 		# active area, corresponds to area visible for camera
 		rect = QtGui.QGraphicsRectItem( 0, 0, 4000, 3000 )
@@ -75,7 +75,7 @@ class PathView( QtGui.QGraphicsView ):
 		self.scene().addItem( rect )
 
 
-	def render_truth_path( self, path ):
+	def render_path( self, path ):
 
 		detections = path.get_sorted_positioned_detections()
 
@@ -98,7 +98,7 @@ class PathView( QtGui.QGraphicsView ):
 
 
 	# show background image
-	def show_frame( self, timestamp, darken = False ):
+	def render_frame( self, timestamp, darken = False ):
 
 		# Convert: avconv -i video.mp3 $filename%03d.jpg
 		pixmap = QtGui.QPixmap( '%s/%03d.jpg' % ( config.IMG_FOLDER, timestamp.frame+1 ) )
@@ -112,7 +112,7 @@ class PathView( QtGui.QGraphicsView ):
 
 
 	# show detections with circles
-	def show_detections( self, dset, current_paths = [], show_ids = False ):
+	def render_detections( self, dset, current_paths = [], show_ids = False ):
 
 		for d in dset.detections.values():
 			if d.position is not None:
@@ -137,6 +137,13 @@ class PathView( QtGui.QGraphicsView ):
 				else:
 					circle.setPen( self.circle_pen )
 					self.scene().addItem( circle )
+
+
+	def render_position( self, position ):
+
+		circle = QtGui.QGraphicsEllipseItem( position[ 0 ]-25, position[ 1 ]-25, 50, 50 )
+		circle.setPen( self.position_pen )
+		self.scene().addItem( circle )
 
 
 	def wheelEvent( self, event ):
