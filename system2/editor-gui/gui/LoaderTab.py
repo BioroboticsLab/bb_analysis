@@ -307,7 +307,7 @@ class LoaderTab( QtGui.QWidget ):
 
 								else:
 									detection = ds.EmptyDetection( timestamp )
-									detection.position = np.array( [ pos_x, pos_y ] ),
+									detection.position = np.array( [ pos_x, pos_y ] )
 									detection.readability = readability
 									path.add_detection( detection )
 

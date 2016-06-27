@@ -526,11 +526,11 @@ class EditorTab( QtGui.QSplitter ):
 			self.activate_editing( False )
 
 		elif event.key() == QtCore.Qt.Key_1:
-			self.set_readability( 1 )
+			self.set_readability( ds.Readability.Completely )
 		elif event.key() == QtCore.Qt.Key_2:
-			self.set_readability( 2 )
+			self.set_readability( ds.Readability.Partially )
 		elif event.key() == QtCore.Qt.Key_3:
-			self.set_readability( 3	 )
+			self.set_readability( ds.Readability.Not_At_All )
 
 
 	def on_mouse_move( self ):
@@ -546,16 +546,6 @@ class EditorTab( QtGui.QSplitter ):
 		path = self.current_paths[ 0 ]
 		timestamp = self.current_timestamp
 
-		readability = 1  # default value
-
-		# if available set to readability state of last detection
-		if timestamp.get_previous() in path.detections:
-			readability = path.detections[ timestamp.get_previous() ].readability
-
-		# if some other detection already assigned for this timestamp use this readability state
-		# preferably for any coming changes
-		if timestamp in path.detections:
-			readability = path.detections[ timestamp ].readability
 
 		mouse_pos_widget = self.path_view.mapFromGlobal( QtGui.QCursor.pos() )
 		widget_x = mouse_pos_widget.x()
@@ -572,12 +562,25 @@ class EditorTab( QtGui.QSplitter ):
 		mouse_pos = np.array( [ mouse_pos_scene.x(), mouse_pos_scene.y() ] )
 
 		# get nearest detection within a limit
-		nearest = self.get_nearest_detection( timestamp, mouse_pos, 70 )
+		nearest = self.get_nearest_detection( timestamp, mouse_pos, limit = 70 )
+
+
+		readability = ds.Readability.Completely  # default value
+
+		# if another detection is already assigned for this timestamp use this readability state for
+		# any coming changes
+		if timestamp in path.detections:
+			readability = path.detections[ timestamp ].readability
+
+		# or else use readability state of last detection if available
+		elif timestamp.get_previous() in path.detections:
+			readability = path.detections[ timestamp.get_previous() ].readability
+
 
 		if (
 			    nearest is not None   # there is a detection nearby
 			and nearest.path == path  # it already belongs to the current path
-			and readability != 3      # current state wasn’t marked as unreadable before
+			and readability != ds.Readability.Not_At_All  # current state wasn't marked as unreadable before
 		):
 
 			# don't change the detection already present
@@ -586,7 +589,7 @@ class EditorTab( QtGui.QSplitter ):
 		elif (
 			    nearest is not None   # there is a detection nearby
 			and nearest.path is None  # it's not already assigned
-			and readability != 3      # current state wasn’t marked as unreadable before
+			and readability != ds.Readability.Not_At_All  # current state wasn't marked as unreadable before
 		):
 
 			# assign the new found detection to our path
@@ -626,7 +629,7 @@ class EditorTab( QtGui.QSplitter ):
 			self.activate_editing( True )
 
 
-	def set_readability( self, n ):
+	def set_readability( self, r ):
 
 		editing = self.editing_active
 
@@ -634,13 +637,13 @@ class EditorTab( QtGui.QSplitter ):
 			current_path = self.current_paths[ 0 ]
 			if self.current_timestamp in current_path.detections:
 				detection = current_path.detections[ self.current_timestamp ]
-				detection.readability = n
+				detection.readability = r
 				self.build_path_details( self.current_paths )
 				self.activate_editing( editing )
 				self.on_mouse_move()
 
 
-	def get_nearest_detection( self, timestamp, pos, limit ):
+	def get_nearest_detection( self, timestamp, pos, limit = 70 ):
 
 		# using precalculated KD tree
 		dset = self.dset_store.get( timestamp )

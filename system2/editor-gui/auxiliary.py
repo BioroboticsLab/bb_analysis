@@ -22,3 +22,13 @@ def binary_id_to_int( binary_id ):
 	return id
 
 
+# iterate over a list in neighboring pairs
+def pairwise( iterable ):
+
+	it = iter( iterable )
+	a = next( it )
+	for b in it:
+		yield (a, b)
+		a = b
+
+

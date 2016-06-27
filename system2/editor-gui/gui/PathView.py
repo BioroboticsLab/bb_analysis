@@ -2,6 +2,7 @@ import numpy as np
 from PyQt4 import QtGui, QtCore
 
 import config
+import auxiliary as aux
 from DetectionEllipse import DetectionEllipse
 
 
@@ -80,16 +81,14 @@ class PathView( QtGui.QGraphicsView ):
 		detections = path.get_sorted_positioned_detections()
 
 		# path lines
-		if len( detections ) > 1:
-			for i, d in enumerate( detections[:-1] ):
-				startPos = detections[ i ].position
-				endPos   = detections[ i+1 ].position
-				line = QtGui.QGraphicsLineItem(
-					QtCore.QLineF( startPos[ 0 ], startPos[ 1 ], endPos[ 0 ], endPos[ 1 ] )
-				)
-				line.setPen( self.path_pen )
-				line.setOpacity( 0.7 )
-				self.scene().addItem( line )
+		for a, b in aux.pairwise( detections ):
+
+			line = QtGui.QGraphicsLineItem(
+				QtCore.QLineF( a.position[ 0 ], a.position[ 1 ], b.position[ 0 ], b.position[ 1 ] )
+			)
+			line.setPen( self.path_pen )
+			line.setOpacity( 0.7 )
+			self.scene().addItem( line )
 
 
 	def clear( self ):

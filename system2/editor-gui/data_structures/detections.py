@@ -7,6 +7,15 @@ from sklearn.neighbors import KDTree
 import auxiliary as aux
 
 
+# different from the bb_binary schema because we need easily accessible keys
+class Readability:
+
+	Unknown    = 0
+	Completely = 1
+	Partially  = 2
+	Not_At_All = 3
+
+
 class DetectionSetStore( object ):
 
 	def __init__( self ):
@@ -44,10 +53,10 @@ class DetectionSet( object ):
 	def build_kd_tree( self ):
 
 		positions = [ detection.position for detection in self.detections.values() ]
-		self.kd_tree = KDTree( np.array( positions ), leaf_size=10, metric='euclidean' )
+		self.kd_tree = KDTree( np.array( positions ), leaf_size = 10, metric = 'euclidean' )
 
 
-	def get_nearest_detection( self, pos, limit ):
+	def get_nearest_detection( self, pos, limit = 70 ):
 
 		distances, indices = self.kd_tree.query( pos, k=1 )
 		distance = distances[ 0 ][ 0 ]
@@ -69,8 +78,7 @@ class Detection( object ):
 		self.decoded_id         = decoded_id     # list of floats
 		self.decoded_mean       = None
 
-		# different from the bb_binary schema because we need easily accessible keys
-		self.readability        = 1  # 1 == completely, 2 == partially, 3 == none
+		self.readability        = Readability.Completely
 
 		self.path = None
 
