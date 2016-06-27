@@ -545,6 +545,8 @@ class EditorTab( QtGui.QSplitter ):
 		timestamp = self.current_timestamp
 
 		readability = 1
+		if timestamp.get_previous() in path.detections:
+			readability = path.detections[ timestamp.get_previous() ].readability
 		if timestamp in path.detections:
 			readability = path.detections[ timestamp ].readability
 
