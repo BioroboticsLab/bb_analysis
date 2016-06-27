@@ -4,7 +4,7 @@ Filtering [BeesBook Image Analysis Pipeline](https://github.com/BioroboticsLab/p
 
 ![logo](./logo.png)
 
-There is a [first system](./system1) in development for use with our old database schema.
+* [./system1](./system1) is our first system in development for use with our PostgreSQL database schema.
+* [./system2](./system2) will be using our custom [Cap'n Proto binary format](https://github.com/BioroboticsLab/bb_binary).
 
-Since we already have plans to migrate to a revised database there is likely to be a `system2` released.
 

@@ -2,7 +2,7 @@
 
 From the ongoing bb_analysis project the first release of a minimal productive system.
 
-This program depends on our old database schema for the pipeline output.
+This program depends on our PostgreSQL database schema for the pipeline output.
 Since we already have plans to migrate to a revised database there is likely to be a `system2` released.
 
 ## Usage
