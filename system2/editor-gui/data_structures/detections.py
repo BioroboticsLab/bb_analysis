@@ -2,6 +2,7 @@
 
 
 import numpy as np
+from sklearn.neighbors import KDTree
 
 import auxiliary as aux
 
@@ -32,11 +33,29 @@ class DetectionSet( object ):
 	def __init__( self ):
 
 		self.detections = {}  # key: detection_id, value: type detection
+		self.kd_tree = None
 
 
 	def add_detection( self, detection ):
 
 		self.detections[ detection.detection_id ] = detection
+
+
+	def build_kd_tree( self ):
+
+		positions = [ detection.position for detection in self.detections.values() ]
+		self.kd_tree = KDTree( np.array( positions ), leaf_size=10, metric='euclidean' )
+
+
+	def get_nearest_detection( self, pos, limit ):
+
+		distances, indices = self.kd_tree.query( pos, k=1 )
+		distance = distances[ 0 ][ 0 ]
+		index = indices[ 0 ][ 0 ]
+		if distance <= limit:
+			return self.detections.values()[ index ]
+		else:
+			return None
 
 
 class Detection( object ):

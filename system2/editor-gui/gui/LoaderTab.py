@@ -240,6 +240,8 @@ class LoaderTab( QtGui.QWidget ):
 							detection_data[ 'decodedId' ][::-1]  # reversed, we want least significant bit last
 						) )
 
+					dset.build_kd_tree()
+
 					frame_index += 1
 
 					self.data_load_progress.setValue( frame_index - config.FRAME_START )

@@ -628,7 +628,13 @@ class EditorTab( QtGui.QSplitter ):
 
 	def get_nearest_detection( self, timestamp, pos, limit ):
 
-		nearest = None
+		# using precalculated KD tree
+		dset = self.dset_store.get( timestamp )
+		nearest = dset.get_nearest_detection( pos, limit )
+		return nearest
+
+		# brute force variant
+		'''nearest = None
 		nearest_distance = float( "inf" )
 
 		dset = self.dset_store.get( timestamp )
@@ -638,6 +644,6 @@ class EditorTab( QtGui.QSplitter ):
 				if distance < nearest_distance and distance < limit:
 					nearest = d
 					nearest_distance = distance
-		return nearest
+		return nearest'''
 
 
