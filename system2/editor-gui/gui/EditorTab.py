@@ -535,18 +535,25 @@ class EditorTab( QtGui.QSplitter ):
 
 	def on_mouse_move( self ):
 
+		# editing not active for some reason
 		if not self.editing_active:
 			return
 
+		# there is no path selected or multiple paths are selected
 		if len( self.current_paths ) != 1:
 			return
 
 		path = self.current_paths[ 0 ]
 		timestamp = self.current_timestamp
 
-		readability = 1
+		readability = 1  # default value
+
+		# if available set to readability state of last detection
 		if timestamp.get_previous() in path.detections:
 			readability = path.detections[ timestamp.get_previous() ].readability
+
+		# if some other detection already assigned for this timestamp use this readability state
+		# preferably for any coming changes
 		if timestamp in path.detections:
 			readability = path.detections[ timestamp ].readability
 
@@ -554,6 +561,7 @@ class EditorTab( QtGui.QSplitter ):
 		widget_x = mouse_pos_widget.x()
 		widget_y = mouse_pos_widget.y()
 
+		# mouse has to hover over the viewport widget
 		if (
 			   widget_x < 0 or widget_x > self.path_view.width()
 			or widget_y < 0 or widget_y > self.path_view.height()
@@ -569,23 +577,26 @@ class EditorTab( QtGui.QSplitter ):
 		if (
 			    nearest is not None   # there is a detection nearby
 			and nearest.path == path  # it already belongs to the current path
-			and readability != 3      # we haven't marked it as unreadable before
+			and readability != 3      # current state wasn’t marked as unreadable before
 		):
 
+			# don't change the detection already present
 			pass
 
-		elif ( 
+		elif (
 			    nearest is not None   # there is a detection nearby
 			and nearest.path is None  # it's not already assigned
-			and readability != 3      # we haven't marked it as unreadable before
+			and readability != 3      # current state wasn’t marked as unreadable before
 		):
 
+			# assign the new found detection to our path
 			path.add_and_overwrite_detection( nearest )
 			nearest.readability = readability
 			self.build_path_details( self.current_paths )
 			self.activate_editing( True )
 
 		# else insert empty detection with position information
+		# if mouse position is inside camera image dimensions
 		elif (
 			    mouse_pos[ 0 ] >= 0 and mouse_pos[ 0 ] <= 4000
 			and mouse_pos[ 1 ] >= 0 and mouse_pos[ 1 ] <= 3000
@@ -597,6 +608,7 @@ class EditorTab( QtGui.QSplitter ):
 				detection = path.detections[ timestamp ]
 				# if the already present detection is one from the decoder data we have to
 				# replace it with an empty one before we can set the position from the mouse
+				# otherwise the present detection will get its position updated
 				if not detection.is_empty():
 					detection = ds.EmptyDetection( timestamp )
 					detection.readability = readability
@@ -608,7 +620,7 @@ class EditorTab( QtGui.QSplitter ):
 				detection.readability = readability
 				path.add_detection( detection )
 
-			detection.position = mouse_pos
+			detection.position = mouse_pos  # set position
 
 			self.build_path_details( self.current_paths )
 			self.activate_editing( True )
