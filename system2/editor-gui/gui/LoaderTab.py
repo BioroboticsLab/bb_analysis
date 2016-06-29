@@ -269,6 +269,7 @@ class LoaderTab( QtGui.QWidget ):
 		self.block_inputs( True )
 
 		dset_store = self.parent.dset_store
+		dset_store.delete_path_associations()
 
 		self.parent.path_manager = ds.PathManager( config.PATHS_FILE )
 		path_manager = self.parent.path_manager
@@ -302,8 +303,17 @@ class LoaderTab( QtGui.QWidget ):
 								if detection_id is not None:
 									dset = dset_store.get( timestamp )
 									detection = dset.detections[ detection_id ]
-									detection.readability = readability
-									path.add_detection( detection )
+
+									# if two paths claim the same detection only the first one gets it
+									if detection.path is None:
+										detection.readability = readability
+										path.add_detection( detection )
+
+									else:
+										detection = ds.EmptyDetection( timestamp )
+										detection.position = np.array( [ pos_x, pos_y ] )
+										detection.readability = readability
+										path.add_detection( detection )
 
 								else:
 									detection = ds.EmptyDetection( timestamp )

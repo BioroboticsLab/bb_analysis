@@ -37,6 +37,13 @@ class DetectionSetStore( object ):
 		return next( ( t for t in self.store.keys() if t.frame == frame ), None )
 
 
+	def delete_path_associations( self ):
+
+		for dset in self.store.values():
+			for detection in dset.detections.values():
+				detection.path = None
+
+
 class DetectionSet( object ):
 
 	def __init__( self ):
