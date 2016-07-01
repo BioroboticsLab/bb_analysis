@@ -2,6 +2,8 @@
 *.pkl
 *.bin
 *.csv
+*.json
+*.bbb
 /system1/bit-flip-probability/config.py
 /system1/editor-gui/config.py
 /system1/evaluation/average-id/config.py
