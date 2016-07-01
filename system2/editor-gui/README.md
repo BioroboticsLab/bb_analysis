@@ -15,4 +15,7 @@ Editing mode activates automatically whenever a path is selected that has no det
 * Escape: disable editing mode and discard detection on current timestamp
 * 1,2,3: set readability value. ( 1 == completely, 2 == partially, 3 == none )
 
+### Merging
+
+Use the script merge.py to merge two path files.
 

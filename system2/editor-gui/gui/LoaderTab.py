@@ -300,6 +300,7 @@ class LoaderTab( QtGui.QWidget ):
 
 								detection_id, pos_x, pos_y, readability = detection_data
 
+								# data point is associated with a detection from the pipeline output
 								if detection_id is not None:
 									dset = dset_store.get( timestamp )
 									detection = dset.detections[ detection_id ]
@@ -309,12 +310,14 @@ class LoaderTab( QtGui.QWidget ):
 										detection.readability = readability
 										path.add_detection( detection )
 
+									# insert empty detection for every following path
 									else:
 										detection = ds.EmptyDetection( timestamp )
 										detection.position = np.array( [ pos_x, pos_y ] )
 										detection.readability = readability
 										path.add_detection( detection )
 
+								# data point is an empty detection
 								else:
 									detection = ds.EmptyDetection( timestamp )
 									detection.position = np.array( [ pos_x, pos_y ] )

@@ -48,13 +48,23 @@ class PathManager( object ):
 	def combine_paths( self, tag_id ):
 
 		paths = self.paths[ tag_id ]
+
+		# first path is main path
 		main_path_id, main_path = paths.items()[ 0 ]
+
+		# every following path gets merged into main path
 		for path_id, path in paths.items()[1:]:
+
+			# if two detections have the same timestamp the one which is not empty wins or the first
+			# one otherwise
 			for detection in path.detections.values():
 				detection.path = None
 				main_path.add_detection( detection )
+
+			# delete the path
 			path.detections = {}
 			paths[ path_id ] = None
+
 		self.paths[ tag_id ] = { main_path_id: main_path }
 
 
@@ -86,8 +96,8 @@ class Path( object ):
 			detection.path = self
 			self._fill_with_empties( detection.timestamp )
 
-		# or the already present detection is an empty one
-		elif self.detections[ detection.timestamp ].is_empty():
+		# or the already present detection is an empty one and the detection to add is not
+		elif self.detections[ detection.timestamp ].is_empty() and not detection.is_empty():
 			self.detections[ detection.timestamp ].path = None
 			self.detections[ detection.timestamp ] = detection
 			detection.path = self

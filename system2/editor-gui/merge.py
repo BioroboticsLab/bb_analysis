@@ -7,6 +7,10 @@ file_2 = 'paths_100_3.pkl'
 file_merged = 'paths.pkl'
 
 
+# Merges two path files. Does not merge the paths. Solves conflicts with path ids used twice so the
+# paths don't get merged. Does not assert that every detection is only used once. This has to be
+# handled during loading.
+
 def main():
 
 	if not os.path.isfile( file_1 ):
