@@ -7,5 +7,5 @@ TIME = [ 9, 36 ]
 CAM  = 0
 
 FRAME_START = 0
-FRAME_END   = 50
+FRAME_END   = 200
 

@@ -101,6 +101,10 @@ class EditorTab( QtGui.QSplitter ):
 		self.edit_id_button.clicked.connect( self.edit_id )
 		self.edit_id_button.setDisabled( True )
 
+		self.delete_id_button = QtGui.QPushButton( '', self )
+		self.delete_id_button.clicked.connect( self.delete_id )
+		self.delete_id_button.setDisabled( True )
+
 		self.path_table = QtGui.QTableWidget( self )
 		self.path_table.keyPressEvent = self.on_key_press
 		self.path_table.setRowCount( 0 )
@@ -119,10 +123,11 @@ class EditorTab( QtGui.QSplitter ):
 
 		path_details_box = QtGui.QGroupBox( 'Path Details', self )
 		path_details_grid = QtGui.QGridLayout()
-		path_details_grid.addWidget( self.tag_id_button,  0, 0, 1, 1 )
-		path_details_grid.addWidget( self.tag_view,       0, 1, 2, 1 )
-		path_details_grid.addWidget( self.edit_id_button, 1, 0, 1, 1 )
-		path_details_grid.addWidget( self.path_table,     2, 0, 1, 2 )
+		path_details_grid.addWidget( self.tag_id_button,    0, 0, 1, 1 )
+		path_details_grid.addWidget( self.tag_view,         0, 1, 3, 1 )
+		path_details_grid.addWidget( self.edit_id_button,   1, 0, 1, 1 )
+		path_details_grid.addWidget( self.delete_id_button, 2, 0, 1, 1 )
+		path_details_grid.addWidget( self.path_table,       3, 0, 1, 2 )
 		path_details_box.setLayout( path_details_grid )
 
 		column_2_layout = QtGui.QVBoxLayout()
@@ -316,9 +321,13 @@ class EditorTab( QtGui.QSplitter ):
 			if path.tag_id is not None:
 				self.tag_id_button.setDisabled( False )
 				self.edit_id_button.setText( 'Save Id' )
+				self.delete_id_button.setDisabled( False )
+				self.delete_id_button.setText( 'Set None' )
 			else:
 				self.tag_id_button.setDisabled( True )
 				self.edit_id_button.setText( 'Assign Id' )
+				self.delete_id_button.setDisabled( True )
+				self.delete_id_button.setText( '' )
 
 			self.tag_view.set_tag( path.tag_id )
 
@@ -361,6 +370,8 @@ class EditorTab( QtGui.QSplitter ):
 			self.tag_id_button.setDisabled( True )
 			self.edit_id_button.setDisabled( True )
 			self.edit_id_button.setText( '' )
+			self.delete_id_button.setDisabled( True )
+			self.delete_id_button.setText( '' )
 			self.tag_view.clear()
 
 
@@ -377,12 +388,20 @@ class EditorTab( QtGui.QSplitter ):
 			if self.tag_view.binary_id is not None:
 				new_id = aux.binary_id_to_int( self.tag_view.binary_id )
 				self.path_manager.move_path( current_path, new_id )
-				memorize_path = current_path
 				self.build_path_tree()
-				self.build_path_details( [ memorize_path ] )
+				self.build_path_details( [ current_path ] )
 			else:
 				self.tag_view.set_tag( 0 )
 				self.edit_id_button.setText( 'Save Id' )
+
+
+	def delete_id( self ):
+
+		if len( self.current_paths ) == 1:
+			current_path = self.current_paths[ 0 ]
+			self.path_manager.move_path( current_path, None )
+			self.build_path_tree()
+			self.build_path_details( [ current_path ] )
 
 
 	def on_table_select( self, selected, deselected ):
