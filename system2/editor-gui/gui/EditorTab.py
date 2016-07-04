@@ -90,7 +90,6 @@ class EditorTab( QtGui.QSplitter ):
 
 		self.tag_id_button = QtGui.QPushButton( 'Tag Id:', self )
 		self.tag_id_button.clicked.connect( self.show_main_tag_id )
-		self.tag_id_button.setDisabled( True )
 
 		self.tag_view = TagView( self )
 		self.tag_view.setRenderHint( QtGui.QPainter.Antialiasing, True )
@@ -99,11 +98,9 @@ class EditorTab( QtGui.QSplitter ):
 
 		self.edit_id_button = QtGui.QPushButton( '', self )
 		self.edit_id_button.clicked.connect( self.edit_id )
-		self.edit_id_button.setDisabled( True )
 
 		self.delete_id_button = QtGui.QPushButton( '', self )
 		self.delete_id_button.clicked.connect( self.delete_id )
-		self.delete_id_button.setDisabled( True )
 
 		self.path_table = QtGui.QTableWidget( self )
 		self.path_table.keyPressEvent = self.on_key_press
@@ -192,7 +189,7 @@ class EditorTab( QtGui.QSplitter ):
 		self.addWidget( column_3_widget )
 
 
-	def activate( self ):
+	def activate_window( self ):
 
 		self.dset_store = self.parent.dset_store
 		self.path_manager = self.parent.path_manager
@@ -204,15 +201,21 @@ class EditorTab( QtGui.QSplitter ):
 			self.end_timestamp = max( timestamps )
 			self.set_current_timestamp( self.start_timestamp )
 
-			self.build_path_tree()
+		self.build_path_tree()
 
 
 	def goto_loader( self ):
+
+		if self.editing_active:
+			return
 
 		self.parent.goto_loader()
 
 
 	def save_truth_data( self ):
+
+		if self.editing_active:
+			return
 
 		if self.path_manager is not None and len( self.path_manager.paths ) > 0:
 
@@ -249,15 +252,20 @@ class EditorTab( QtGui.QSplitter ):
 
 	def add_new_path( self ):
 
+		if self.editing_active:
+			return
+
 		if self.path_manager is not None:
 			new_path = ds.Path( None )
 			self.path_manager.add_path( new_path )
 			self.build_path_tree()
 			self.build_path_details( [ new_path ] )
-			self.activate_editing()
 
 
 	def combine_paths( self ):
+
+		if self.editing_active:
+			return
 
 		if len( self.current_paths ) > 1:
 			tag_id = self.current_paths[ 0 ].tag_id
@@ -266,6 +274,9 @@ class EditorTab( QtGui.QSplitter ):
 
 
 	def remove_path( self ):
+
+		if self.editing_active:
+			return
 
 		for path in self.current_paths:
 			self.path_manager.remove_path( path )
@@ -290,10 +301,12 @@ class EditorTab( QtGui.QSplitter ):
 				path_node.path_id = path_id
 
 		self.build_path_details( [] )
-		self.activate_editing()
 
 
 	def select_path( self, item, column ):
+
+		if self.editing_active:
+			return
 
 		if item.path_id is not None:
 			path = self.path_manager.get_path( item.tag_id, item.path_id )
@@ -301,8 +314,6 @@ class EditorTab( QtGui.QSplitter ):
 		else:
 			paths = self.path_manager.paths[ item.tag_id ].values()
 			self.build_path_details( paths )
-
-		self.activate_editing()
 
 
 	def build_path_details( self, paths ):
@@ -377,11 +388,17 @@ class EditorTab( QtGui.QSplitter ):
 
 	def show_main_tag_id( self ):
 
+		if self.editing_active:
+			return
+
 		if len( self.current_paths ) > 0:
 			self.tag_view.set_tag( self.current_paths[ 0 ].tag_id )
 
 
 	def edit_id( self ):
+
+		if self.editing_active:
+			return
 
 		if len( self.current_paths ) == 1:
 			current_path = self.current_paths[ 0 ]
@@ -397,6 +414,9 @@ class EditorTab( QtGui.QSplitter ):
 
 	def delete_id( self ):
 
+		if self.editing_active:
+			return
+
 		if len( self.current_paths ) == 1:
 			current_path = self.current_paths[ 0 ]
 			self.path_manager.move_path( current_path, None )
@@ -406,12 +426,15 @@ class EditorTab( QtGui.QSplitter ):
 
 	def on_table_select( self, selected, deselected ):
 
+		if self.editing_active:
+			self.table_select_row()
+			return
+
 		if selected.indexes():
 			row = selected.indexes()[ 0 ].row()
 			detection = self.current_paths[ 0 ].get_sorted_detections()[ row ]
 			self.tag_view.set_tag( detection.decoded_mean )
 			self.set_current_timestamp( detection.timestamp )
-			self.activate_editing()
 
 
 	def table_select_row( self ):
@@ -474,7 +497,8 @@ class EditorTab( QtGui.QSplitter ):
 		next_timestamp = self.current_timestamp.get_next()
 		if next_timestamp is not None and not self.end_timestamp < next_timestamp:
 			self.set_current_timestamp( next_timestamp )
-			self.activate_editing()
+		if self.editing_active:
+			self.on_mouse_move()
 
 
 	def show_previous( self ):
@@ -482,41 +506,34 @@ class EditorTab( QtGui.QSplitter ):
 		previous_timestamp = self.current_timestamp.get_previous()
 		if previous_timestamp is not None and not previous_timestamp < self.start_timestamp:
 			self.set_current_timestamp( previous_timestamp )
-			self.activate_editing()
+		if self.editing_active:
+			self.on_mouse_move()
 
 
 	def delete_current_detection( self ):
 
-		if len( self.current_paths ) == 1:
-
-			current_path = self.current_paths[ 0 ]
-			if self.current_timestamp in current_path.detections:
-				detection = current_path.detections[ self.current_timestamp ]
-				current_path.remove_detection( detection )
-
-				self.build_path_details( [ current_path ] )
-
-
-	def activate_editing( self, boolean = None ):
-
-		if boolean is not None:
-			self.editing_active = boolean
+		if self.editing_active:
 			return
 
 		if len( self.current_paths ) != 1:
-			self.editing_active = False
 			return
 
 		current_path = self.current_paths[ 0 ]
-
 		if self.current_timestamp in current_path.detections:
 			detection = current_path.detections[ self.current_timestamp ]
-			if not detection.is_unpositioned():
-				self.editing_active = False
-				return
+			current_path.remove_detection( detection )
 
-		self.editing_active = True
-		self.on_mouse_move()
+			self.build_path_details( [ current_path ] )
+
+
+	def activate_editing( self, boolean ):
+
+		if boolean and len( self.current_paths ) == 1:
+			self.editing_active = True
+			self.on_mouse_move()
+
+		else:
+			self.editing_active = False
 
 
 	def on_key_press( self, event ):
@@ -535,14 +552,16 @@ class EditorTab( QtGui.QSplitter ):
 		elif event.key() == QtCore.Qt.Key_Down:
 			self.show_next()
 
-		elif event.key() == QtCore.Qt.Key_Delete:
-			self.delete_current_detection()
-			self.activate_editing()
-		elif event.key() == QtCore.Qt.Key_Return:
+		elif event.key() == QtCore.Qt.Key_E:
+			self.activate_editing( True )
+		elif event.key() == QtCore.Qt.Key_Q:
 			self.activate_editing( False )
-		elif event.key() == QtCore.Qt.Key_Escape:
-			self.delete_current_detection()
+		elif event.key() == QtCore.Qt.Key_Escape:  # same as Q+R
 			self.activate_editing( False )
+			self.delete_current_detection()
+
+		elif event.key() == QtCore.Qt.Key_R:
+			self.delete_current_detection()
 
 		elif event.key() == QtCore.Qt.Key_1:
 			self.set_readability( ds.Readability.Completely )
@@ -554,12 +573,7 @@ class EditorTab( QtGui.QSplitter ):
 
 	def on_mouse_move( self ):
 
-		# editing not active for some reason
 		if not self.editing_active:
-			return
-
-		# there is no path selected or multiple paths are selected
-		if len( self.current_paths ) != 1:
 			return
 
 		path = self.current_paths[ 0 ]
@@ -615,7 +629,6 @@ class EditorTab( QtGui.QSplitter ):
 			path.add_and_overwrite_detection( nearest )
 			nearest.readability = readability
 			self.build_path_details( self.current_paths )
-			self.activate_editing( True )
 
 		# else insert empty detection with position information
 		# if mouse position is inside camera image dimensions
@@ -645,12 +658,9 @@ class EditorTab( QtGui.QSplitter ):
 			detection.position = mouse_pos  # set position
 
 			self.build_path_details( self.current_paths )
-			self.activate_editing( True )
 
 
 	def set_readability( self, r ):
-
-		editing = self.editing_active
 
 		if len( self.current_paths ) == 1:
 			current_path = self.current_paths[ 0 ]
@@ -658,8 +668,6 @@ class EditorTab( QtGui.QSplitter ):
 				detection = current_path.detections[ self.current_timestamp ]
 				detection.readability = r
 				self.build_path_details( self.current_paths )
-				self.activate_editing( editing )
-				self.on_mouse_move()
 
 
 	def get_nearest_detection( self, timestamp, pos, limit = 70 ):

@@ -41,7 +41,7 @@ class MainWindow( QtGui.QMainWindow ):
 			print 'Error: no tracks file loaded'
 			return
 
-		self.editor_tab.activate()
+		self.editor_tab.activate_window()
 		self.central_widget.setCurrentWidget( self.editor_tab )
 
 
