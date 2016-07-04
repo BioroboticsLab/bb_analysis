@@ -559,6 +559,9 @@ class EditorTab( QtGui.QSplitter ):
 		elif event.key() == QtCore.Qt.Key_Escape:  # same as Q+R
 			self.activate_editing( False )
 			self.delete_current_detection()
+		elif event.key() == QtCore.Qt.Key_C:  # same as E+Q
+			self.activate_editing( True )
+			self.activate_editing( False )
 
 		elif event.key() == QtCore.Qt.Key_R:
 			self.delete_current_detection()
@@ -664,10 +667,15 @@ class EditorTab( QtGui.QSplitter ):
 
 		if len( self.current_paths ) == 1:
 			current_path = self.current_paths[ 0 ]
+
 			if self.current_timestamp in current_path.detections:
+
 				detection = current_path.detections[ self.current_timestamp ]
 				detection.readability = r
 				self.build_path_details( self.current_paths )
+
+				if self.editing_active:
+					self.on_mouse_move()
 
 
 	def get_nearest_detection( self, timestamp, pos, limit = 70 ):
