@@ -483,8 +483,7 @@ class EditorTab( QtGui.QSplitter ):
 
 		self.path_view.render_detections(
 			self.dset_store.get( self.current_timestamp ),
-			self.current_paths,
-			show_ids = self.show_ids_checkbox.isChecked()
+			self.current_paths
 		)
 
 		# show all positions
@@ -495,19 +494,32 @@ class EditorTab( QtGui.QSplitter ):
 					if timestamp in path.detections:
 						detection = path.detections[ timestamp ]
 						if detection.is_empty() and not detection.is_unpositioned():
-							if len( self.current_paths ) == 1 and self.current_paths[ 0 ] == path:
+							if path in self.current_paths:
 								self.path_view.render_position( detection.position, True )
 							else:
 								self.path_view.render_position( detection.position, False )
 
 		# show only position of current path
-		elif len( self.current_paths ) == 1:
-			path = self.current_paths[ 0 ]
-			timestamp = self.current_timestamp
-			if timestamp in path.detections:
-				detection = path.detections[ timestamp ]
-				if detection.is_empty() and not detection.is_unpositioned():
-					self.path_view.render_position( detection.position, True )
+		else:
+			for path in self.current_paths:
+				timestamp = self.current_timestamp
+				if timestamp in path.detections:
+					detection = path.detections[ timestamp ]
+					if detection.is_empty() and not detection.is_unpositioned():
+						self.path_view.render_position( detection.position, True )
+
+		if self.show_ids_checkbox.isChecked():
+			for tag_id in self.path_manager.paths:
+				for path in self.path_manager.paths[ tag_id ].values():
+					timestamp = self.current_timestamp
+					if timestamp in path.detections:
+						detection = path.detections[ timestamp ]
+						if ( not detection.is_unpositioned() ) and (
+							   not detection.is_empty()
+							or self.show_positions_checkbox.isChecked()
+							or path in self.current_paths
+						):
+							self.path_view.render_id( detection.position, path.tag_id )
 
 
 	def show_next( self ):

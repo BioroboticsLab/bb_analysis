@@ -117,28 +117,18 @@ class PathView( QtGui.QGraphicsView ):
 	def render_detections( self, dset, current_paths = [], show_ids = False ):
 
 		for d in dset.detections.values():
-			if d.position is not None:
+			if not d.is_unpositioned():
 				circle = DetectionEllipse( d, self.ellipse_click_callback )
 
 				if d.path is not None:
-
 					if d.path in current_paths:
 						circle.setPen( self.circle_selected_pen )
-						self.scene().addItem( circle )
 					else:
 						circle.setPen( self.circle_blocked_pen )
-						self.scene().addItem( circle )
-
-					if show_ids:
-						id_text = QtGui.QGraphicsSimpleTextItem( str( d.path.tag_id ) )
-						id_text.setPos( d.position[ 0 ]-34, d.position[ 1 ]-60 )
-						id_text.setScale( 2 )
-						id_text.setBrush( self.id_text_brush )
-						self.scene().addItem( id_text )
-
 				else:
 					circle.setPen( self.circle_pen )
-					self.scene().addItem( circle )
+
+				self.scene().addItem( circle )
 
 
 	def render_position( self, position, is_selected ):
@@ -149,6 +139,15 @@ class PathView( QtGui.QGraphicsView ):
 		else:
 			circle.setPen( self.position_pen )
 		self.scene().addItem( circle )
+
+
+	def render_id( self, position, tag_id ):
+
+		id_text = QtGui.QGraphicsSimpleTextItem( str( tag_id ) )
+		id_text.setPos( position[ 0 ]-34, position[ 1 ]-60 )
+		id_text.setScale( 2 )
+		id_text.setBrush( self.id_text_brush )
+		self.scene().addItem( id_text )
 
 
 	def wheelEvent( self, event ):
