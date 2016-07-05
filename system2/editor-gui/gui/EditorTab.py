@@ -156,6 +156,9 @@ class EditorTab( QtGui.QSplitter ):
 		self.show_ids_checkbox = QtGui.QCheckBox( 'Show IDs', self )
 		self.show_ids_checkbox.clicked.connect( self.update_path_view )
 
+		self.show_positions_checkbox = QtGui.QCheckBox( 'Show All Positions', self )
+		self.show_positions_checkbox.clicked.connect( self.update_path_view )
+
 		self.show_image_checkbox = QtGui.QCheckBox( 'Show Image', self )
 		self.show_image_checkbox.setChecked( True )
 		self.show_image_checkbox.clicked.connect( self.update_path_view )
@@ -164,13 +167,14 @@ class EditorTab( QtGui.QSplitter ):
 		self.darken_image_checkbox.clicked.connect( self.update_path_view )
 
 		view_buttons_grid = QtGui.QGridLayout()
-		view_buttons_grid.addWidget( self.time_lable,            0, 0, 1, 2 )
-		view_buttons_grid.addWidget( self.previous_button,       1, 0, 1, 1 )
-		view_buttons_grid.addWidget( self.next_button,           1, 1, 1, 1 )
-		view_buttons_grid.addWidget( self.show_path_checkbox,    0, 2, 1, 1 )
-		view_buttons_grid.addWidget( self.show_ids_checkbox,     0, 3, 1, 1 )
-		view_buttons_grid.addWidget( self.show_image_checkbox,   1, 2, 1, 1 )
-		view_buttons_grid.addWidget( self.darken_image_checkbox, 1, 3, 1, 1 )
+		view_buttons_grid.addWidget( self.time_lable,              0, 0, 1, 2 )
+		view_buttons_grid.addWidget( self.previous_button,         1, 0, 1, 1 )
+		view_buttons_grid.addWidget( self.next_button,             1, 1, 1, 1 )
+		view_buttons_grid.addWidget( self.show_path_checkbox,      0, 2, 1, 1 )
+		view_buttons_grid.addWidget( self.show_ids_checkbox,       0, 3, 1, 1 )
+		view_buttons_grid.addWidget( self.show_positions_checkbox, 0, 4, 1, 1 )
+		view_buttons_grid.addWidget( self.show_image_checkbox,     1, 2, 1, 1 )
+		view_buttons_grid.addWidget( self.darken_image_checkbox,   1, 3, 1, 1 )
 
 		view_footer_layout = QtGui.QHBoxLayout()
 		view_footer_layout.addLayout( view_buttons_grid )
@@ -483,13 +487,27 @@ class EditorTab( QtGui.QSplitter ):
 			show_ids = self.show_ids_checkbox.isChecked()
 		)
 
-		if len( self.current_paths ) == 1:
+		# show all positions
+		if self.show_positions_checkbox.isChecked():
+			for tag_id in self.path_manager.paths:
+				for path in self.path_manager.paths[ tag_id ].values():
+					timestamp = self.current_timestamp
+					if timestamp in path.detections:
+						detection = path.detections[ timestamp ]
+						if detection.is_empty() and not detection.is_unpositioned():
+							if len( self.current_paths ) == 1 and self.current_paths[ 0 ] == path:
+								self.path_view.render_position( detection.position, True )
+							else:
+								self.path_view.render_position( detection.position, False )
+
+		# show only position of current path
+		elif len( self.current_paths ) == 1:
 			path = self.current_paths[ 0 ]
 			timestamp = self.current_timestamp
 			if timestamp in path.detections:
 				detection = path.detections[ timestamp ]
 				if detection.is_empty() and not detection.is_unpositioned():
-					self.path_view.render_position( detection.position )
+					self.path_view.render_position( detection.position, True )
 
 
 	def show_next( self ):
@@ -565,6 +583,9 @@ class EditorTab( QtGui.QSplitter ):
 
 		elif event.key() == QtCore.Qt.Key_R:
 			self.delete_current_detection()
+
+		elif event.key() == QtCore.Qt.Key_P:
+			self.add_new_path()
 
 		elif event.key() == QtCore.Qt.Key_1:
 			self.set_readability( ds.Readability.Completely )

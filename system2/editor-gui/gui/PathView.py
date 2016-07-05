@@ -46,20 +46,23 @@ class PathView( QtGui.QGraphicsView ):
 		self.scale( self.scale_current, self.scale_current )
 
 		black_color      = QtGui.QColor(   0,   0,   0 )
+		grey_color       = QtGui.QColor( 220, 220, 220 )
 		white_color      = QtGui.QColor( 255, 255, 255 )
+
 		orange_color     = QtGui.QColor( 255, 132,  64 )
 		red_color        = QtGui.QColor( 255,   0,   0 )
 		blue_color       = QtGui.QColor(   0,   0, 255 )
 		light_blue_color = QtGui.QColor( 102, 102, 255 )
+		purple_color     = QtGui.QColor( 231,  43, 198 )
 		green_color      = QtGui.QColor(   0, 196,   0 )
-		grey_color       = QtGui.QColor( 220, 220, 220 )
 
-		self.no_pen              = QtGui.QPen( QtCore.Qt.NoPen )
-		self.circle_pen          = QtGui.QPen( orange_color,    7.5 )
-		self.circle_selected_pen = QtGui.QPen( blue_color,       10 )
-		self.circle_blocked_pen  = QtGui.QPen( red_color,        10 )
-		self.position_pen        = QtGui.QPen( green_color,      10 )
-		self.path_pen            = QtGui.QPen( light_blue_color, 10 )
+		self.no_pen                = QtGui.QPen( QtCore.Qt.NoPen )
+		self.circle_pen            = QtGui.QPen( orange_color,    7.5 )
+		self.circle_blocked_pen    = QtGui.QPen( red_color,        10 )
+		self.circle_selected_pen   = QtGui.QPen( blue_color,       10 )
+		self.position_pen          = QtGui.QPen( purple_color,     10 )
+		self.position_selected_pen = QtGui.QPen( green_color,      10 )
+		self.path_pen              = QtGui.QPen( light_blue_color, 10 )
 
 		self.area_brush    = QtGui.QBrush( grey_color )
 		self.overlay_brush = QtGui.QBrush( black_color )
@@ -138,10 +141,13 @@ class PathView( QtGui.QGraphicsView ):
 					self.scene().addItem( circle )
 
 
-	def render_position( self, position ):
+	def render_position( self, position, is_selected ):
 
 		circle = QtGui.QGraphicsEllipseItem( position[ 0 ]-25, position[ 1 ]-25, 50, 50 )
-		circle.setPen( self.position_pen )
+		if is_selected:
+			circle.setPen( self.position_selected_pen )
+		else:
+			circle.setPen( self.position_pen )
 		self.scene().addItem( circle )
 
 

@@ -8,6 +8,7 @@ A gui for viewing and editing ground truth paths.
 
 * A, Left, Up: go to previous timestamp
 * D, Right, Down: go to next timestamp
+* P: add new path
 * R: remove detection on current timestamp (not possible in editing mode)
 * E: enter editing mode
 * Q: quit editing mode
