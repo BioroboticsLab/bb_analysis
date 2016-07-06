@@ -207,7 +207,8 @@ class LoaderTab( QtGui.QWidget ):
 				cam = frame_container.camId
 				#frame_container.fromTimestamp              # already available
 				#frame_container.toTimestamp                # already available
-				#frame_container.dataSources[ 0 ].filename  # already available
+
+				dset_store.source = frame_container.dataSources[ 0 ].filename
 
 				previous_timestamp = None
 
@@ -279,7 +280,11 @@ class LoaderTab( QtGui.QWidget ):
 			try:
 
 				with open( config.PATHS_FILE, 'rb' ) as paths_file:
-					paths_input = pickle.load( paths_file )
+					input = pickle.load( paths_file )
+
+				if dset_store.source != input[ 'source' ]:
+					print 'Warning: data source for detections and paths do not match'
+				paths_input = input[ 'paths' ]
 
 				self.paths_load_progress.setMaximum( len( paths_input ) )
 				self.app.processEvents()

@@ -21,6 +21,7 @@ class DetectionSetStore( object ):
 	def __init__( self ):
 
 		self.store = {}  # key: type TimeStamp, value: type DetectionSet
+		self.source = None
 
 
 	def get( self, timestamp ):

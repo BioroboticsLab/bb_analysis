@@ -224,6 +224,7 @@ class EditorTab( QtGui.QSplitter ):
 		if self.path_manager is not None and len( self.path_manager.paths ) > 0:
 
 			path_output = {}
+			output = { 'paths': path_output, 'source': self.dset_store.source }
 			self.save_progress.setValue( 0 )
 			self.save_progress.setMaximum( len(self.path_manager.paths) )
 
@@ -248,7 +249,7 @@ class EditorTab( QtGui.QSplitter ):
 				self.save_progress.setValue( i+1 )
 
 	 		with open( self.path_manager.filename, 'wb' ) as paths_file:
-				pickle.dump( path_output, paths_file )
+				pickle.dump( output, paths_file )
 
 		else:
 			print 'Warning: nothing to save'
