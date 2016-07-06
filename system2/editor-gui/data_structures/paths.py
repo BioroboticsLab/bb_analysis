@@ -97,7 +97,7 @@ class Path( object ):
 			self._fill_with_empties( detection.timestamp )
 
 		# or the already present detection is an empty one and the detection to add is not
-		elif self.detections[ detection.timestamp ].is_empty() and not detection.is_empty():
+		elif self.detections[ detection.timestamp ].is_unpositioned() and not detection.is_unpositioned():
 			self.detections[ detection.timestamp ].path = None
 			self.detections[ detection.timestamp ] = detection
 			detection.path = self
