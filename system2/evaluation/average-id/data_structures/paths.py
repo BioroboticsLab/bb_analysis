@@ -34,6 +34,8 @@ class Path( object ):
 		self.ids_sum_mean = np.zeros( 12, dtype = np.int )
 		self.ids_sum_weighted_neighbourhood = np.zeros( 12 )
 
+		self.saliency_count = 0
+		self.ids_sum_saliency = np.zeros( 12 )
 
 	def add_detection( self, detection ):
 
@@ -45,6 +47,9 @@ class Path( object ):
 			self.ids_sum += detection.decoded_id
 			self.ids_sum_mean += aux.int_id_to_binary( detection.decoded_mean )
 			self.ids_sum_weighted_neighbourhood += aux.weighted_neighbourhood_id( detection.decoded_mean )
+
+			self.saliency_count += detection.localizer_saliency
+			self.ids_sum_saliency += ( np.array(detection.decoded_id) * detection.localizer_saliency )
 
 		else:
 			print 'Warning: detection not added, path already has detection for this timestamp'
@@ -62,6 +67,13 @@ class Path( object ):
 	def determine_average_id_by_mean_mean( self ):
 
 		average = np.round( self.ids_sum_mean*1.0 / self.ids_count )  # keep in mind numpy rounds 0.5 to 0
+		determined_id = aux.binary_id_to_int( average )
+		return determined_id
+
+
+	def determine_average_id_with_saliency( self ):
+
+		average = np.round( self.ids_sum_saliency / self.saliency_count )  # keep in mind numpy rounds 0.5 to 0
 		determined_id = aux.binary_id_to_int( average )
 		return determined_id
 
