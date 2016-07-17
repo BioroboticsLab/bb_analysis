@@ -74,20 +74,19 @@ class Validation( object ):
 
 				if mean_id == truth_id:
 					mean_rights += 1
+				else:
+					false_text += '\n----\n' + str( aux.int_id_to_binary( truth_id ) ) + ' (truth)'
+					false_text += ' id=' + str(truth_id) + ' len=' + str( len( path.detections ) )
+					false_text += '\n' + str( path.ids_sum / path.ids_count ) + ' (determined)'
+					false_text += '\n' + str( aux.int_id_to_binary( mean_id ) ) + ' (determined rounded)'
+					#for d in path.detections.values():
+					#	false_text += '\n' + str( aux.int_id_to_binary( d.decoded_mean ) )
 
 				if mean_mean_id == truth_id:
 					mean_mean_rights += 1
 
 				if weigneig_id == truth_id:
 					weigneig_rights += 1
-				'''elif len( path.detections ) >= 20:
-					false_text += '\n----\n' + str( aux.int_id_to_binary( truth_id ) ) + ' (truth)'
-					false_text += '\n' + str( path.ids_sum_weighted_neighbourhood / path.ids_count ) + ' (determined)'
-					false_text += '\n' + str( aux.int_id_to_binary( weigneig_id ) ) + ' (determined rounded)'
-					for key,d in path.detections.items():
-						candidates = list( set( [ c[0] for c in d.candidate_ids ] ) )
-						for c in candidates:
-							false_text += '\n' + str( aux.int_id_to_binary( c ) )'''
 
 		print 'validation finished'
 		print '--------------------------------'
