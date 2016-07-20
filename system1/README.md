@@ -40,8 +40,8 @@ Since we already have plans to migrate to a revised database there is likely to 
 
 ## Utils
 
-* Remove double detections from database. *(to be released)*
-* Export results to CSV. *(to be released)*
+* Remove double detections from database. *TODO*
+* Export results to CSV. *TODO*
 * [Calculate some statistics](./statistics) about the truth data.
 
 ## Database
