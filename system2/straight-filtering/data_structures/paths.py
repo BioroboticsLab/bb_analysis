@@ -1,6 +1,9 @@
+import pickle
 import numpy as np
 
+import config
 import auxiliary as aux
+import data_structures as ds
 
 
 # path consists of matches
@@ -32,6 +35,37 @@ class PathManager( object ):
 			path.determine_average_id_by_mean()
 
 		self.open_paths = []
+
+
+	def save_closed_paths( self, database_connection ):
+
+		path_output = {}
+		output = { 'paths': path_output, 'source': database_connection.source }
+
+		for path in self.closed_paths:
+
+			tag_id = path.determined_id
+
+			if not tag_id in path_output:
+				path_output[ tag_id ] = {}
+
+			path_id = len( path_output[ tag_id ] )
+			path_output[ tag_id ][ path_id ] = {}
+
+			for timestamp,match in path.matches.items():
+
+				detection = match.detection
+
+				if not detection.is_empty():
+					path_output[ tag_id ][ path_id ][ timestamp.frame ] = (
+						detection.detection_id,
+						detection.position[ 0 ],
+						detection.position[ 1 ],
+						ds.Readability.Unknown
+					)
+
+	 	with open( config.PATHS_FILE, 'wb' ) as paths_file:
+			pickle.dump( output, paths_file )
 
 
 	def clear( self ):

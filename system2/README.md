@@ -33,6 +33,6 @@ This program depends on our custom [Cap'n Proto binary format](https://github.co
 
 4. Evaluation
 
-	* Use the gui to visually inspect the filtering results. *TODO*
+	* Use the [editor gui](./editor-gui) to visually inspect the filtering results.
 	* [Evaluate](./evaluation) the filtering results against the ground truth.
 

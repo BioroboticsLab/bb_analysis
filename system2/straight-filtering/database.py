@@ -15,6 +15,7 @@ class Connection:
 	def __init__( self ):
 
 		self.frames = None
+		self.source = None
 
 		if not os.path.exists( config.DATA_FOLDER ):
 			print 'Error: folder not found'
@@ -41,6 +42,7 @@ class Connection:
 
 				cam = frame_container.camId
 				self.frames = list( frame_container.frames )
+				self.source = frame_container.dataSources[ 0 ].filename
 
 				# break because we only load the first fname
 				break
@@ -69,66 +71,5 @@ class Connection:
 			) )
 
 		return dset
-
-
-	# returns int
-	def get_updated_id( self, detection ):
-
-		'''execute(
-			  "SELECT \"updatedID\" FROM " + detection.timestamp.table
-			+ " WHERE id = " + str(detection.detection_id)
-		)'''
-		return None
-
-
-	# returns statusmessage as string
-	# you need to commit changes afterwards
-	def write_updated_id( self, detection, updated_id ):
-
-		'''execute(
-			  "UPDATE " + detection.timestamp.table
-			+ " SET \"updatedID\" = " + str(updated_id)
-			+ " WHERE id = " + str(detection.detection_id)
-		)'''
-
-
-	# returns int
-	def get_truth_id( self, detection ):
-
-		'''execute(
-			"SELECT \"truthID\" FROM " + detection.timestamp.table
-			+ " WHERE id = " + str(detection.detection_id)
-		)'''
-		return None
-
-
-	# returns statusmessage as string
-	# you need to commit changes afterwards
-	def write_truth_id( self, detection, truth_id ):
-
-		'''execute(
-			  "UPDATE " + detection.timestamp.table
-			+ " SET \"truthID\" = " + str(truth_id)
-			+ " WHERE id = " + str(detection.detection_id)
-		)'''
-
-
-	# returns int
-	def get_path_number( self, detection ):
-
-		'''self.cursor.execute(
-			"SELECT \"pathID\" FROM " + detection.timestamp.table
-			+ " WHERE id = " + str(detection.detection_id)
-		)'''
-		return None
-
-
-	def write_path_number( self, detection, path_number ):
-
-		'''execute(
-			  "UPDATE " + detection.timestamp.table
-			+ " SET \"pathID\" = " + str(path_number)
-			+ " WHERE id = " + str(detection.detection_id)
-		)'''
 
 

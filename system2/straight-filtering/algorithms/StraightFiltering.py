@@ -59,20 +59,8 @@ class StraightFiltering():
 
 		# saving
 		self.path_manager.close_all_paths()
-		if len(self.path_manager.closed_paths) > 0:
-
-			for i, path in enumerate( self.path_manager.closed_paths ):
-				unempty_matches = path.get_sorted_unempty_matches()
-
-				for match in unempty_matches:
-
-					database_connection.write_updated_id( match.detection, path.determined_id )
-
-					# temporary solution to save information on which detections belonged to one path,
-					# since updated_ids are not necessarily unique at a specific timestamp
-					database_connection.write_path_number( match.detection, i )
-
-		print str(len(self.path_manager.closed_paths)) + ' paths written to database'
+		self.path_manager.save_closed_paths( database_connection )
+		print str(len(self.path_manager.closed_paths)) + ' paths saved to file ' + config.PATHS_FILE
 		print '--------------------------------'
 
 
