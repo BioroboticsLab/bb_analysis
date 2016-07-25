@@ -12,4 +12,8 @@
 /system1/statistics/config.py
 /system1/straight-filtering/config.py
 /system1/graph-filtering/config.py
-
+/system2/bit-flip-probability/config.py
+/system2/editor-gui/config.py
+/system2/evaluation/average-id/config.py
+/system2/evaluation/global/config.py
+/system2/straight-filtering/config.py
