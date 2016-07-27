@@ -16,4 +16,5 @@
 /system2/editor-gui/config.py
 /system2/evaluation/average-id/config.py
 /system2/evaluation/global/config.py
+/system2/learning-data-generator/config.py
 /system2/straight-filtering/config.py
