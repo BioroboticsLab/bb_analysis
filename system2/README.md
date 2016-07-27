@@ -9,7 +9,7 @@ This program depends on our custom [Cap'n Proto binary format](https://github.co
 	* Get pipeline output in the [Cap'n Proto binary format](https://github.com/BioroboticsLab/bb_binary).
 	* Get video file and covert to image sequence.
 		```
-		ffmpeg -i file.mpg -r 1/1 $filename%03d.jpg
+		ffmpeg -i video.mkv $filename%03d.jpg
 		```
 
 2. Preparation
