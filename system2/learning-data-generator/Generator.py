@@ -59,20 +59,14 @@ class Generator( object ):
 				'neighbors-200',
 				'neighbors-300',
 				'hamming-distance',
-				#'bit-distance-0',
-				#'bit-distance-1',
-				#'bit-distance-2',
-				#'bit-distance-3',
-				#'bit-distance-4',
-				#'bit-distance-5',
-				#'bit-distance-6',
-				#'bit-distance-7',
-				#'bit-distance-8',
-				#'bit-distance-9',
-				#'bit-distance-10',
-				#'bit-distance-11',
+				'max_bit_distance',
+				'mean_bit_distance',
 				'detection1_saliency',
 				'detection2_saliency',
+				'saliency_difference',
+				'x_rotation_difference',
+				'y_rotation_difference',
+				'z_rotation_difference',
 				'match'
 			]
 			my_file.write( ', '.join( data_output ) + '\n' )
@@ -120,6 +114,22 @@ class Generator( object ):
 							# hamming distance: int
 							hamming_distance = aux.hamming_distance( ld.decoded_mean, d.decoded_mean )
 
+							bit_distances = np.abs( np.subtract( d.decoded_id, ld.decoded_id ) )
+							max_bit_distance = np.max( bit_distances )
+							mean_bit_distance = np.mean( bit_distances )
+
+							x_rotation_difference = abs( d.x_rotation - ld.x_rotation )
+							if x_rotation_difference > np.pi:
+								x_rotation_difference = 2*np.pi - x_rotation_difference
+
+							y_rotation_difference = abs( d.y_rotation - ld.y_rotation )
+							if y_rotation_difference > np.pi:
+								y_rotation_difference = 2*np.pi - y_rotation_difference
+
+							z_rotation_difference = abs( d.z_rotation - ld.z_rotation )
+							if z_rotation_difference > np.pi:
+								z_rotation_difference = 2*np.pi - z_rotation_difference
+
 							data_output = [
 								str( frames_gap ),
 								"%.1f" % euclidian_distance,
@@ -128,11 +138,18 @@ class Generator( object ):
 								str( neighbors200 ),
 								str( neighbors300 ),
 								str( hamming_distance ),
-								# TODO single bit distances
+								"%.2f" % max_bit_distance,
+								"%.2f" % mean_bit_distance,
 								"%.2f" % d.localizer_saliency,
 								"%.2f" % ld.localizer_saliency,
+								"%.2f" % abs( d.localizer_saliency - ld.localizer_saliency ),
+								"%.2f" % x_rotation_difference,
+								"%.2f" % y_rotation_difference,
+								"%.2f" % z_rotation_difference,
 								str(match)
 							]
+
+							#print data_output
 
 							my_file.write( ', '.join( data_output ) + '\n' )
 							datalines_written += 1
