@@ -307,8 +307,14 @@ class LoaderTab( QtGui.QWidget ):
 
 								# data point is associated with a detection from the pipeline output
 								if detection_id is not None:
+
 									dset = dset_store.get( timestamp )
-									detection = dset.detections[ detection_id ]
+
+									if detection_id in dset.detections:
+										detection = dset.detections[ detection_id ]
+									else:
+										print 'Warning: detection_id not found, your truth file does not match your pipeline data. Please rematch!'
+										continue
 
 									# if two paths claim the same detection only the first one gets it
 									if detection.path is None:
@@ -328,7 +334,6 @@ class LoaderTab( QtGui.QWidget ):
 									detection.position = np.array( [ pos_x, pos_y ] )
 									detection.readability = readability
 									path.add_detection( detection )
-
 
 					self.paths_load_progress.setValue( i+1 )
 					self.app.processEvents()

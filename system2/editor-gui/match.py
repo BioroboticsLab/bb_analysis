@@ -10,7 +10,7 @@ import config
 import data_structures as ds
 
 
-MATCH_DISTANCE_LIMIT = 40  # maximum 50
+MATCH_DISTANCE_LIMIT = 30  # maximum 50, recommended 30
 
 
 def main():
