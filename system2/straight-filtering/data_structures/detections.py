@@ -66,7 +66,7 @@ class DetectionSet( object ):
 
 class Detection( object ):
 
-	def __init__( self, detection_id, timestamp, position, localizer_saliency, decoded_id ):
+	def __init__( self, detection_id, timestamp, position, localizer_saliency, decoded_id, x_rot, y_rot, z_rot ):
 
 		self.detection_id       = detection_id
 		self.timestamp          = timestamp      # type TimeStamp
@@ -74,6 +74,9 @@ class Detection( object ):
 		self.localizer_saliency = localizer_saliency
 		self.decoded_id         = decoded_id     # list of floats
 		self.decoded_mean       = None
+		self.x_rotation         = x_rot
+		self.y_rotation         = y_rot
+		self.z_rotation         = z_rot
 
 		self.readability        = Readability.Completely
 
@@ -107,7 +110,7 @@ class EmptyDetection( Detection ):
 
 	def __init__( self, timestamp ):
 
-		Detection.__init__( self, None, timestamp, None, None, None )
+		Detection.__init__( self, None, timestamp, None, None, None, None, None, None )
 
 
 	def take( self ):

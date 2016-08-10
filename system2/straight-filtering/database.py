@@ -60,6 +60,8 @@ class Connection:
 		frame = self.frames[ timestamp.frame ]
 		data = convert_frame_to_numpy( frame )
 
+		#print 'timestamp: ' + str(frame.timestamp)
+
 		for detection_data in data:
 
 			dset.add_detection( ds.Detection(
@@ -67,7 +69,10 @@ class Connection:
 				timestamp,
 				np.array( [ detection_data[ 'ypos' ], detection_data[ 'xpos' ] ] ),  # rotated, otherwise will be portrait orientation
 				detection_data[ 'localizerSaliency' ],
-				detection_data[ 'decodedId' ][::-1]  # reversed, we want least significant bit last
+				detection_data[ 'decodedId' ][::-1],  # reversed, we want least significant bit last
+				detection_data[ 'xRotation' ],
+				detection_data[ 'yRotation' ],
+				detection_data[ 'zRotation' ]
 			) )
 
 		return dset
