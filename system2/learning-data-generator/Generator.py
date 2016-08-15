@@ -61,6 +61,7 @@ class Generator( object ):
 				'hamming-distance',
 				'max_bit_distance',
 				'mean_bit_distance',
+				'confidence',
 				'detection1_saliency',
 				'detection2_saliency',
 				'saliency_difference',
@@ -118,6 +119,8 @@ class Generator( object ):
 							max_bit_distance = np.max( bit_distances )
 							mean_bit_distance = np.mean( bit_distances )
 
+							confidence = np.min( np.abs( 0.5 - d.decoded_id ) * 2 )
+
 							x_rotation_difference = abs( d.x_rotation - ld.x_rotation )
 							if x_rotation_difference > np.pi:
 								x_rotation_difference = 2*np.pi - x_rotation_difference
@@ -140,6 +143,7 @@ class Generator( object ):
 								str( hamming_distance ),
 								"%.2f" % max_bit_distance,
 								"%.2f" % mean_bit_distance,
+								"%.2f" % confidence,
 								"%.2f" % d.localizer_saliency,
 								"%.2f" % ld.localizer_saliency,
 								"%.2f" % abs( d.localizer_saliency - ld.localizer_saliency ),
