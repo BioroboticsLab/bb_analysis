@@ -78,8 +78,13 @@ class Path( object ):
 
 		self.detections = {}  # key: type timestamp, value: type Detection
 
-		self.detections_ids_sum = np.zeros( 12 )
-		self.detections_ids_count = 0
+		self.ids_count = 0
+		self.ids_sum = np.zeros( 12 )
+		#self.ids_sum_mean = np.zeros( 12, dtype = np.int )
+
+		self.saliency_count = 0
+		self.ids_sum_saliency = np.zeros( 12 )
+
 		self.determined_id = None
 
 		self.add_detection( detection0 )
@@ -96,9 +101,12 @@ class Path( object ):
 
 		if not detection.is_empty():
 
-			#self.match_ids_sum += aux.int_id_to_binary( match.detection.decoded_mean )
-			self.detections_ids_sum += aux.weighted_neighbourhood_id( detection.decoded_mean )
-			self.detections_ids_count += 1
+			self.ids_count += 1
+			self.ids_sum += detection.decoded_id
+			#self.ids_sum_mean += aux.int_id_to_binary( detection.decoded_mean )
+
+			self.saliency_count += detection.localizer_saliency
+			self.ids_sum_saliency += ( np.array(detection.decoded_id) * detection.localizer_saliency )
 
 
 	def get_sorted_detections( self ):
@@ -115,15 +123,27 @@ class Path( object ):
 	# here we calculate an average id and calculate the hamming distance to that
 	def fast_average_hamming_distance_by_mean( self, id ):
 
-		average = self.detections_ids_sum*1.0 / self.detections_ids_count
+		average = self.ids_sum*1.0 / self.ids_count
 		binary_id = aux.int_id_to_binary( id )
 		return float( np.sum( np.abs( binary_id - average ) ) )
 
 
-	# simply bitwise mean (rounded)
 	def determine_average_id_by_mean( self ):
 
-		average = np.round( self.detections_ids_sum*1.0 / self.detections_ids_count )  # keep in mind numpy rounds 0.5 to 0
+		average = np.round( self.ids_sum*1.0 / self.ids_count )  # keep in mind numpy rounds 0.5 to 0
+		self.determined_id = aux.binary_id_to_int( average )
+		return self.determined_id
+
+
+	#def determine_average_id_by_mean_mean( self ):
+	#	average = np.round( self.ids_sum_mean*1.0 / self.ids_count )  # keep in mind numpy rounds 0.5 to 0
+	#	self.determined_id = aux.binary_id_to_int( average )
+	#	return self.determined_id
+
+
+	def determine_average_id_with_saliency( self ):
+
+		average = np.round( self.ids_sum_saliency / self.saliency_count )  # keep in mind numpy rounds 0.5 to 0
 		self.determined_id = aux.binary_id_to_int( average )
 		return self.determined_id
 
