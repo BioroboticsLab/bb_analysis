@@ -7,10 +7,9 @@ from detections import Detection
 from detections import EmptyDetection
 
 from matches import MatchSet
-from matches import Match
 
 from claims import ClaimManager
-from claims import MatchClaim
+from claims import DetectionClaim
 
 from paths import PathManager
 from paths import Path

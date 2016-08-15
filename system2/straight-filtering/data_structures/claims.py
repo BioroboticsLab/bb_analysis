@@ -19,9 +19,9 @@ class ClaimManager( object ):
 
 		for claim in self.claims:
 			path = claim.path
-			if ( not claim.match.detection.taken ) and ( not path.has_match_at_timestamp( timestamp ) ):
-				path.add_match( claim.match )
-				claim.match.detection.take()
+			if ( not claim.detection.taken ) and ( not path.has_detection_at_timestamp( timestamp ) ):
+				path.add_detection( claim.detection )
+				claim.detection.take()
 
 
 	def clear( self ):
@@ -29,12 +29,12 @@ class ClaimManager( object ):
 		self.claims = []
 
 
-# Score on a Match
-class MatchClaim( object ):
+# Score on a detection
+class DetectionClaim( object ):
 
-	def __init__( self, match, score, path ):
+	def __init__( self, detection, score, path ):
 
-		self.match = match
+		self.detection = detection
 		self.score = score
 		self.path = path
 

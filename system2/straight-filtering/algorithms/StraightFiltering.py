@@ -71,9 +71,10 @@ class StraightFiltering():
 		# set claims on best matches
 		self.claim_manager.clear()
 		for path in self.path_manager.open_paths:
-			mset = scoring.hamming_mean( path, dset )
+			#mset = scoring.hamming_mean( path, dset )
+			mset = scoring.xgboost_learning( path, dset )
 			for m in mset.matches:
-				self.claim_manager.add_claim( ds.MatchClaim( m[ 0 ], m[ 1 ], path ) )
+				self.claim_manager.add_claim( ds.DetectionClaim( m[ 0 ], m[ 1 ], path ) )
 		self.claim_manager.sort_claims()
 
 		# allocate claims
@@ -82,15 +83,15 @@ class StraightFiltering():
 
 		# set unsuccessful paths pending
 		for path in self.path_manager.open_paths:
-			if not path.has_match_at_timestamp( timestamp ):
-				path.add_match( ds.Match( ds.EmptyDetection( timestamp ) ) )
+			if not path.has_detection_at_timestamp( timestamp ):
+				path.add_detection( ds.EmptyDetection( timestamp ) )
 				if closing.hard_closing( path ):
 					self.path_manager.close_path( path )
 
 		# open new path for every detection not already used in any path
 		for d in dset.detections:
 			if not d.taken:
-				new_path = ds.Path( ds.Match( d ) )
+				new_path = ds.Path( d )
 				self.path_manager.appendPath( new_path );
 				d.take()
 
