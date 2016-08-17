@@ -37,6 +37,9 @@ class Path( object ):
 		self.saliency_count = 0
 		self.ids_sum_saliency = np.zeros( 12 )
 
+		self.confidence_count = 0
+		self.ids_sum_confidence = np.zeros( 12 )
+
 	def add_detection( self, detection ):
 
 		if not detection.timestamp in self.detections:
@@ -50,6 +53,10 @@ class Path( object ):
 
 			self.saliency_count += detection.localizer_saliency
 			self.ids_sum_saliency += ( np.array(detection.decoded_id) * detection.localizer_saliency )
+
+			confidence = np.min( np.abs( 0.5 - detection.decoded_id ) * 2 )
+			self.confidence_count += confidence
+			self.ids_sum_confidence += ( np.array(detection.decoded_id) * confidence )
 
 		else:
 			print 'Warning: detection not added, path already has detection for this timestamp'
@@ -74,6 +81,13 @@ class Path( object ):
 	def determine_average_id_with_saliency( self ):
 
 		average = np.round( self.ids_sum_saliency / self.saliency_count )  # keep in mind numpy rounds 0.5 to 0
+		determined_id = aux.binary_id_to_int( average )
+		return determined_id
+
+
+	def determine_average_id_with_confidence( self ):
+
+		average = np.round( self.ids_sum_confidence / self.confidence_count )  # keep in mind numpy rounds 0.5 to 0
 		determined_id = aux.binary_id_to_int( average )
 		return determined_id
 
