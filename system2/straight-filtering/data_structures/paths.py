@@ -26,6 +26,7 @@ class PathManager( object ):
 		self.closed_paths.append( path )
 
 		path.determine_average_id_by_mean()
+		#path.determine_average_id_with_confidence()
 
 
 	def close_all_paths( self ):
@@ -33,6 +34,7 @@ class PathManager( object ):
 		for path in self.open_paths:
 			self.closed_paths.append( path )
 			path.determine_average_id_by_mean()
+			#path.determine_average_id_with_confidence()
 
 		self.open_paths = []
 
@@ -85,6 +87,9 @@ class Path( object ):
 		self.saliency_count = 0
 		self.ids_sum_saliency = np.zeros( 12 )
 
+		self.confidence_count = 0
+		self.ids_sum_confidence = np.zeros( 12 )
+
 		self.determined_id = None
 
 		self.add_detection( detection0 )
@@ -107,6 +112,10 @@ class Path( object ):
 
 			self.saliency_count += detection.localizer_saliency
 			self.ids_sum_saliency += ( np.array(detection.decoded_id) * detection.localizer_saliency )
+
+			confidence = np.min( np.abs( 0.5 - detection.decoded_id ) * 2 )
+			self.confidence_count += confidence
+			self.ids_sum_confidence += ( np.array(detection.decoded_id) * confidence )
 
 
 	def get_sorted_detections( self ):
@@ -146,5 +155,12 @@ class Path( object ):
 		average = np.round( self.ids_sum_saliency / self.saliency_count )  # keep in mind numpy rounds 0.5 to 0
 		self.determined_id = aux.binary_id_to_int( average )
 		return self.determined_id
+
+
+	def determine_average_id_with_confidence( self ):
+
+		average = np.round( self.ids_sum_confidence / self.confidence_count )  # keep in mind numpy rounds 0.5 to 0
+		determined_id = aux.binary_id_to_int( average )
+		return determined_id
 
 

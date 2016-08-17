@@ -56,21 +56,21 @@ def get_neighboring_digits_pattern( id_bin, pos ):
 	return int( 4 * id_bin[ p1 ] + 2 * id_bin[ p2 ] + id_bin[ p3 ] )
 
 
-with open( 'bit-flip-probability.pkl', 'rb' ) as myfile:
-	weighted_neighbourhood_array = pickle.load( myfile )
+#with open( 'bit-flip-probability.pkl', 'rb' ) as myfile:
+#	weighted_neighbourhood_array = pickle.load( myfile )
 
 
-def weighted_neighbourhood_id( id ):
-
-	result = np.zeros( 12 )
-	id_bin = int_id_to_binary( id )
-
-	for pos in range( 0, 12 ):
-		pattern = get_neighboring_digits_pattern( id_bin, pos )
-		look_up_value = weighted_neighbourhood_array[ pos*8 + pattern ]
-		result[ pos ] = look_up_value
-
-	return result
+#def weighted_neighbourhood_id( id ):
+#
+#	result = np.zeros( 12 )
+#	id_bin = int_id_to_binary( id )
+#
+#	for pos in range( 0, 12 ):
+#		pattern = get_neighboring_digits_pattern( id_bin, pos )
+#		look_up_value = weighted_neighbourhood_array[ pos*8 + pattern ]
+#		result[ pos ] = look_up_value
+#
+#	return result
 
 
 # iterate over a list in neighboring pairs
