@@ -55,6 +55,9 @@ class EditorTab( QtGui.QSplitter ):
 		self.path_tree.setColumnWidth( 0, 110 )
 		self.path_tree.setColumnWidth( 1, 50 )
 
+		self.select_all_button = QtGui.QPushButton( 'Select All', self )
+		self.select_all_button.clicked.connect( self.select_all )
+
 		self.new_path_button = QtGui.QPushButton( 'Add new Path', self )
 		self.new_path_button.clicked.connect( self.add_new_path )
 
@@ -71,9 +74,10 @@ class EditorTab( QtGui.QSplitter ):
 		self.save_progress.setMinimum( 0 )
 
 		edit_grid = QtGui.QGridLayout()
-		edit_grid.addWidget( self.new_path_button,      0, 0, 1, 2 )
-		edit_grid.addWidget( self.combine_paths_button, 1, 0, 1, 1 )
-		edit_grid.addWidget( self.remove_path_button,   1, 1, 1, 1 )
+		edit_grid.addWidget( self.select_all_button,    0, 0, 1, 2 )
+		edit_grid.addWidget( self.new_path_button,      1, 0, 1, 2 )
+		edit_grid.addWidget( self.combine_paths_button, 2, 0, 1, 1 )
+		edit_grid.addWidget( self.remove_path_button,   2, 1, 1, 1 )
 		edit_grid.addWidget( self.save_button,          3, 0, 1, 1 )
 		edit_grid.addWidget( self.save_progress,        3, 1, 1, 1 )
 
@@ -253,6 +257,18 @@ class EditorTab( QtGui.QSplitter ):
 
 		else:
 			print 'Warning: nothing to save'
+
+
+	def select_all( self ):
+
+		if self.editing_active:
+			return
+
+		paths = []
+		for d in self.path_manager.paths.values():
+			paths.extend( d.values() )
+
+		self.build_path_details( paths )
 
 
 	def add_new_path( self ):
