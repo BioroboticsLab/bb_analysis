@@ -1,3 +1,7 @@
+import random
+import colorsys
+from PyQt4 import QtGui
+
 import data_structures as ds
 
 
@@ -86,6 +90,9 @@ class Path( object ):
 
 		self.detections = {}  # key: type timestamp, value: type Detection
 		self.tag_id = tag_id
+
+		self.color = colorsys.hsv_to_rgb( random.random(), 1.0, 1.0 )
+		self.pen   = QtGui.QPen( QtGui.QColor( self.color[0]*255, self.color[1]*255, self.color[2]*255 ), 10 )
 
 
 	def add_detection( self, detection ):

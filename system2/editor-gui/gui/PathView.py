@@ -79,9 +79,13 @@ class PathView( QtGui.QGraphicsView ):
 		self.scene().addItem( rect )
 
 
-	def render_path( self, path ):
+	def render_path( self, path, rainbow_mode = False ):
 
 		detections = path.get_sorted_positioned_detections()
+
+		pen = self.path_pen
+		if rainbow_mode:
+			pen = path.pen
 
 		# path lines
 		for a, b in aux.pairwise( detections ):
@@ -89,7 +93,7 @@ class PathView( QtGui.QGraphicsView ):
 			line = QtGui.QGraphicsLineItem(
 				QtCore.QLineF( a.position[ 0 ], a.position[ 1 ], b.position[ 0 ], b.position[ 1 ] )
 			)
-			line.setPen( self.path_pen )
+			line.setPen( pen )
 			line.setOpacity( 0.7 )
 			self.scene().addItem( line )
 
@@ -114,17 +118,20 @@ class PathView( QtGui.QGraphicsView ):
 
 
 	# show detections with circles
-	def render_detections( self, dset, current_paths = [], show_ids = False ):
+	def render_detections( self, dset, current_paths = [], rainbow_mode = False ):
 
 		for d in dset.detections.values():
 			if not d.is_unpositioned():
 				circle = DetectionEllipse( d, self.ellipse_click_callback )
 
 				if d.path is not None:
-					if d.path in current_paths:
-						circle.setPen( self.circle_selected_pen )
+					if rainbow_mode:
+						circle.setPen( d.path.pen )
 					else:
-						circle.setPen( self.circle_blocked_pen )
+						if d.path in current_paths:
+							circle.setPen( self.circle_selected_pen )
+						else:
+							circle.setPen( self.circle_blocked_pen )
 				else:
 					circle.setPen( self.circle_pen )
 

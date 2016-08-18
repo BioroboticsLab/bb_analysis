@@ -170,6 +170,9 @@ class EditorTab( QtGui.QSplitter ):
 		self.darken_image_checkbox = QtGui.QCheckBox( 'Darken Image', self )
 		self.darken_image_checkbox.clicked.connect( self.update_path_view )
 
+		self.rainbow_mode_checkbox = QtGui.QCheckBox( 'Rainbow Mode', self )
+		self.rainbow_mode_checkbox.clicked.connect( self.update_path_view )
+
 		view_buttons_grid = QtGui.QGridLayout()
 		view_buttons_grid.addWidget( self.time_lable,              0, 0, 1, 2 )
 		view_buttons_grid.addWidget( self.previous_button,         1, 0, 1, 1 )
@@ -179,6 +182,7 @@ class EditorTab( QtGui.QSplitter ):
 		view_buttons_grid.addWidget( self.show_positions_checkbox, 0, 4, 1, 1 )
 		view_buttons_grid.addWidget( self.show_image_checkbox,     1, 2, 1, 1 )
 		view_buttons_grid.addWidget( self.darken_image_checkbox,   1, 3, 1, 1 )
+		view_buttons_grid.addWidget( self.rainbow_mode_checkbox,   1, 4, 1, 1 )
 
 		view_footer_layout = QtGui.QHBoxLayout()
 		view_footer_layout.addLayout( view_buttons_grid )
@@ -496,11 +500,12 @@ class EditorTab( QtGui.QSplitter ):
 
 		if self.show_path_checkbox.isChecked():
 			for path in self.current_paths:
-				self.path_view.render_path( path )
+				self.path_view.render_path( path, self.rainbow_mode_checkbox.isChecked() )
 
 		self.path_view.render_detections(
 			self.dset_store.get( self.current_timestamp ),
-			self.current_paths
+			self.current_paths,
+			self.rainbow_mode_checkbox.isChecked()
 		)
 
 		# show all positions
