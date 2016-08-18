@@ -160,7 +160,7 @@ class Path( object ):
 	def determine_average_id_with_confidence( self ):
 
 		average = np.round( self.ids_sum_confidence / self.confidence_count )  # keep in mind numpy rounds 0.5 to 0
-		determined_id = aux.binary_id_to_int( average )
-		return determined_id
+		self.determined_id = aux.binary_id_to_int( average )
+		return self.determined_id
 
 
