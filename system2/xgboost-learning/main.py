@@ -1,8 +1,18 @@
+# -*- coding: utf-8 -*-
+
 import numpy as np
 import pandas as pd
 import xgboost as xgb
 
+from sklearn.metrics import auc, confusion_matrix, roc_curve
 from sklearn.cross_validation import StratifiedShuffleSplit
+
+import operator
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set(color_codes=True)
+sns.set(rc={"figure.figsize": (16, 6)})
+sns.set_style("whitegrid")
 
 
 USE_MEMMAP = True
@@ -42,4 +52,36 @@ for train_index, test_index in cv:
 	model = xgb.train( param, dtrain, num_round, evals=evals, early_stopping_rounds=2 )
 	model.save_model('xgb-model.bin')
 
+'''
+model.feature_names = [
+	'Lückenlänge',
+	'Euklidischer Abstand',
+	'Nachbarn Radius 50',
+	'Nachbarn Radius 100',
+	'Nachbarn Radius 200',
+	'Nachbarn Radius 300',
+	'Hamming-Abstand',
+	'Maximaler Bit-Abstand',
+	'Mittlerer Bit-Abstand',
+	'Konfidenz',
+	'Localizer-Saliency D1',
+	'Localizer-Saliency D2',
+	'Localizer-Saliency Differenz',
+	'X-Rotation Differenz',
+	'Y-Rotation Differenz',
+	'Z-Rotation Differenz',
+	'match'
+]
+
+importance = model.get_fscore()
+importance = sorted(importance.items(), key=operator.itemgetter(1))
+
+df = pd.DataFrame(importance, columns=['Feature', 'fscore'])
+df['fscore'] = df['fscore'] / df['fscore'].sum()
+
+df.plot(kind='barh', x='Feature', y='fscore', legend=False, figsize=(10, 6))
+#plt.title('XGBoost Feature Wichtigkeit')
+plt.xlabel('Relative Wichtigkeit')
+plt.show()
+'''
 
