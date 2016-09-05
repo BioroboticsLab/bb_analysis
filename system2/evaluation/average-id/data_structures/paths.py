@@ -1,3 +1,4 @@
+import random
 import numpy as np
 import auxiliary as aux
 
@@ -39,6 +40,20 @@ class Path( object ):
 
 		self.confidence_count = 0
 		self.ids_sum_confidence = np.zeros( 12 )
+
+
+	def random_subset( self, n ):
+
+		p = Path( self.id )
+		if n < len( self.detections ):
+			sample = random.sample( self.detections.values(), n )
+			for d in sample:
+				p.add_detection( d )
+		else:
+			for d in self.detections.values():
+				p.add_detection( d )
+		return p
+
 
 	def add_detection( self, detection ):
 

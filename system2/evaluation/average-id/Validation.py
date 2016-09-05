@@ -69,51 +69,57 @@ class Validation( object ):
 
 			if len( path.detections ) >= 10:
 
-				total += 1
-				mean_id       = path.determine_average_id_by_mean()
-				mean_mean_id  = path.determine_average_id_by_mean_mean()
-				weigneig_id   = path.determine_average_id_by_weighted_neighbourhood()
-				saliency_id   = path.determine_average_id_with_saliency()
-				confidence_id = path.determine_average_id_with_confidence()
+				for iterations in range( 10 ):
 
-				if mean_id == truth_id:
-					mean_rights += 1
-				else:
-					false_text += '\n----\n' + str( aux.int_id_to_binary( truth_id ) ) + ' (truth)'
-					false_text += ' id=' + str(truth_id) + ' len=' + str( len( path.detections ) )
-					false_text += '\n' + str( path.ids_sum / path.ids_count ) + ' (determined)'
-					false_text += '\n' + str( aux.int_id_to_binary( mean_id ) ) + ' (determined rounded)'
-					#for d in path.detections.values():
-					#	false_text += '\n' + str( aux.int_id_to_binary( d.decoded_mean ) )
+					path_sample = path
+					subset_size = 10
+					#path_sample = path.random_subset( subset_size )
 
-				if mean_mean_id == truth_id:
-					mean_mean_rights += 1
+					total += 1
+					mean_id       = path_sample.determine_average_id_by_mean()
+					mean_mean_id  = path_sample.determine_average_id_by_mean_mean()
+					weigneig_id   = path_sample.determine_average_id_by_weighted_neighbourhood()
+					saliency_id   = path_sample.determine_average_id_with_saliency()
+					confidence_id = path_sample.determine_average_id_with_confidence()
 
-				if weigneig_id == truth_id:
-					weigneig_rights += 1
+					if mean_id == truth_id:
+						mean_rights += 1
+					else:
+						false_text += '\n----\n' + str( aux.int_id_to_binary( truth_id ) ) + ' (truth)'
+						false_text += ' id=' + str(truth_id) + ' len=' + str( len( path_sample.detections ) )
+						false_text += '\n' + str( path_sample.ids_sum / path_sample.ids_count ) + ' (determined)'
+						false_text += '\n' + str( aux.int_id_to_binary( mean_id ) ) + ' (determined rounded)'
+						#for d in path_sample.detections.values():
+						#	false_text += '\n' + str( aux.int_id_to_binary( d.decoded_mean ) )
 
-				if saliency_id == truth_id:
-					saliency_rights += 1
-				#else:
-				#	false_text += '\n----\n' + str( aux.int_id_to_binary( truth_id ) ) + ' (truth)'
-				#	false_text += ' id=' + str(truth_id) + ' len=' + str( len( path.detections ) )
-				#	false_text += '\n' + str( path.ids_sum_saliency / path.saliency_count ) + ' (determined)'
-				#	false_text += '\n' + str( aux.int_id_to_binary( saliency_id ) ) + ' (determined rounded)'
+					if mean_mean_id == truth_id:
+						mean_mean_rights += 1
 
-				if confidence_id == truth_id:
-					confidence_rights += 1
+					if weigneig_id == truth_id:
+						weigneig_rights += 1
+
+					if saliency_id == truth_id:
+						saliency_rights += 1
+					#else:
+					#	false_text += '\n----\n' + str( aux.int_id_to_binary( truth_id ) ) + ' (truth)'
+					#	false_text += ' id=' + str(truth_id) + ' len=' + str( len( path_sample.detections ) )
+					#	false_text += '\n' + str( path_sample.ids_sum_saliency / path_sample.saliency_count ) + ' (determined)'
+					#	false_text += '\n' + str( aux.int_id_to_binary( saliency_id ) ) + ' (determined rounded)'
+
+					if confidence_id == truth_id:
+						confidence_rights += 1
 
 		print 'validation finished'
 		print '--------------------------------'
 
 		result_text = 'Average ID Results:\n'
 		result_text += 'of ' + str(total) + ' paths:\n'
-		result_text += str(mean_rights)       + ' correct through determine_average_id_by_mean()\n'
-		result_text += str(mean_mean_rights)  + ' correct through determine_average_id_by_mean_mean()\n'
-		result_text += str(weigneig_rights)   + ' correct through determine_average_id_by_weighted_neighbourhood()\n'
-		result_text += str(saliency_rights)   + ' correct through determine_average_id_with_saliency()\n\n'
-		result_text += str(confidence_rights) + ' correct through determine_average_id_with_confidence()\n\n'
-		result_text += false_text
+		result_text += ( "%.3f" % (mean_rights*1.0/total       )) + ' correct through determine_average_id_by_mean()\n'
+		result_text += ( "%.3f" % (mean_mean_rights*1.0/total  )) + ' correct through determine_average_id_by_mean_mean()\n'
+		result_text += ( "%.3f" % (weigneig_rights*1.0/total   )) + ' correct through determine_average_id_by_weighted_neighbourhood()\n'
+		result_text += ( "%.3f" % (saliency_rights*1.0/total   )) + ' correct through determine_average_id_with_saliency()\n\n'
+		result_text += ( "%.3f" % (confidence_rights*1.0/total )) + ' correct through determine_average_id_with_confidence()\n\n'
+		#result_text += false_text
 
 		print result_text
 
