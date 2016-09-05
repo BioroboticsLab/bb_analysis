@@ -69,39 +69,45 @@ class Validation( object ):
 
 			if len( path.detections ) >= 10:
 
-				total += 1
-				mean_id      = path.determine_average_id_by_mean()
-				weigneig_id  = path.determine_average_id_by_weighted_neighbourhood()
-				weigneig2_id = path.determine_average_id_by_weighted_neighbourhood_2iter()
-				distsf_id    = path.derive_id_by_distribution_straight_forward()
-				distcmp_id   = path.derive_id_by_distribution_compare_all()
-				distcnv_id   = path.derive_id_by_distribution_convergence()
+				for iterations in range( 1000 ):
 
-				if mean_id == truth_id:
-					mean_rights += 1
+					#path_sample = path
+					subset_size = 50
+					path_sample = path.random_subset( subset_size )
 
-				if weigneig_id == truth_id:
-					weigneig_rights += 1
-				'''elif len( path.detections ) >= 20:
-					false_text += '\n----\n' + str( aux.int_id_to_binary( truth_id ) ) + ' (truth)'
-					false_text += '\n' + str( path.ids_sum_weighted_neighbourhood / path.ids_count ) + ' (determined)'
-					false_text += '\n' + str( aux.int_id_to_binary( weigneig_id ) ) + ' (determined rounded)'
-					for key,d in path.detections.items():
-						candidates = list( set( [ c[0] for c in d.candidate_ids ] ) )
-						for c in candidates:
-							false_text += '\n' + str( aux.int_id_to_binary( c ) )'''
+					total += 1
+					mean_id      = path_sample.determine_average_id_by_mean()
+					weigneig_id  = path_sample.determine_average_id_by_weighted_neighbourhood()
+					weigneig2_id = path_sample.determine_average_id_by_weighted_neighbourhood_2iter()
+					distsf_id    = path_sample.derive_id_by_distribution_straight_forward()
+					distcmp_id   = path_sample.derive_id_by_distribution_compare_all()
+					distcnv_id   = path_sample.derive_id_by_distribution_convergence()
 
-				if weigneig2_id == truth_id:
-					weigneig2_rights += 1
+					if mean_id == truth_id:
+						mean_rights += 1
 
-				if distsf_id == truth_id:
-					distsf_rights += 1
+					if weigneig_id == truth_id:
+						weigneig_rights += 1
+					'''elif len( path_sample.detections ) >= 20:
+						false_text += '\n----\n' + str( aux.int_id_to_binary( truth_id ) ) + ' (truth)'
+						false_text += '\n' + str( path_sample.ids_sum_weighted_neighbourhood / path_sample.ids_count ) + ' (determined)'
+						false_text += '\n' + str( aux.int_id_to_binary( weigneig_id ) ) + ' (determined rounded)'
+						for key,d in path_sample.detections.items():
+							candidates = list( set( [ c[0] for c in d.candidate_ids ] ) )
+							for c in candidates:
+								false_text += '\n' + str( aux.int_id_to_binary( c ) )'''
 
-				if distcmp_id == truth_id:
-					distcmp_rights += 1
+					if weigneig2_id == truth_id:
+						weigneig2_rights += 1
 
-				if distcnv_id == truth_id:
-					distcnv_rights += 1
+					if distsf_id == truth_id:
+						distsf_rights += 1
+
+					if distcmp_id == truth_id:
+						distcmp_rights += 1
+
+					if distcnv_id == truth_id:
+						distcnv_rights += 1
 
 		print 'validation finished'
 		print '--------------------------------'
