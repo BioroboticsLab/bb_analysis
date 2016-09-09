@@ -48,6 +48,6 @@ class TimeStamp( object ):
 	# t2 is previous if result is negative
 	def frames_difference( self, t2 ):
 
-		t2.frame - self.frame
+		return t2.frame - self.frame
 
 
