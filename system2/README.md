@@ -15,9 +15,9 @@ This program depends on our custom [Cap'n Proto binary format](https://github.co
 2. Preparation
 
 	1. Use the [editor gui](./editor-gui) to track some ground truth data manually.
-	2. Generate a dataset for machine learning from the ground truth. *TODO*
+	2. [Generate a dataset](./learning-data-generator) for machine learning from the ground truth.
 		- *copy the dataset to /xgboost-learning*
-	4. Train the xgboost learning model with the dataset. *TODO*
+	4. [Train the xgboost learning model](./xgboost-learning) with the dataset.
 		- *copy the trained model to /straight-filtering*
 	5. Calculate the [bit flip probability](./bit-flip-probability) from the ground truth data.
 		- *copy the file bit-flip-probability.pkl to /straight-filtering*
@@ -29,10 +29,15 @@ This program depends on our custom [Cap'n Proto binary format](https://github.co
 
 3. Computation
 
-	* [Run the simple filtering algorithm](./straight-filtering).
+	* [Run the filtering algorithm](./straight-filtering).
 
 4. Evaluation
 
 	* Use the [editor gui](./editor-gui) to visually inspect the filtering results.
 	* [Evaluate](./evaluation) the filtering results against the ground truth.
+
+## Utils
+
+* [Calculate some statistics](./statistics) about the truth data.
+* [Render a video](./video-renderer)
 
