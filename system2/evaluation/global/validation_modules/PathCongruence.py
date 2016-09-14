@@ -27,15 +27,20 @@ class PathCongruence( ValidationModule ):
 
 	def get_result( self ):
 
-		mf_percentages_sum = 0
-		mf_percentages_count = 0
-		fp_percentages_sum = 0
-		fp_percentages_count = 0
+		#mf_percentages_sum = 0
+		#mf_percentages_count = 0
+		#fp_percentages_sum = 0
+		#fp_percentages_count = 0
 
-		result_text = 'Path Congruence (per truth path):\n(m.f. = most frequent id)\n'
+		mf = 0
+		mfr = 0
+		sp = 0
+		spr = 0
+
+		#result_text = 'Path Congruence (per truth path):\n(m.f. = most frequent id)\n'
 
 		for truth_id in sorted( self.truth_paths ):
-			result_text += 'path ' + "{:4.0f}".format( truth_id ) + ': '
+			#result_text += 'path ' + "{:4.0f}".format( truth_id ) + ': '
 
 			number_of_detections = sum( [ sum(x.values()) for x in self.truth_paths[ truth_id ].values() ] )
 
@@ -44,20 +49,27 @@ class PathCongruence( ValidationModule ):
 
 			# most frequent id
 			most_frequent = id_distribution_sorted[ 0 ] # tupel ( id, path_distribution )
+
 			most_frequent_count = sum( most_frequent[ 1 ].values() )
-			most_frequent_percentage = 100.0 * most_frequent_count / number_of_detections
-			from_paths_count = len( most_frequent[ 1 ] )
+			#most_frequent_percentage = 100.0 * most_frequent_count / number_of_detections
+
+			#from_paths_count = len( most_frequent[ 1 ] )
 			from_paths_detection_count = 0
 			for path_number in most_frequent[ 1 ].keys():
 				from_paths_detection_count += self.filtering_paths[ path_number ]
-			from_paths_percentage = 100.0 * most_frequent_count / from_paths_detection_count
+			#from_paths_percentage = 100.0 * from_paths_detection_count / most_frequent_count - 100
 
-			mf_percentages_sum += most_frequent_percentage
-			mf_percentages_count += 1
-			fp_percentages_sum += from_paths_percentage
-			fp_percentages_count += 1
+			#mf_percentages_sum += most_frequent_percentage
+			#mf_percentages_count += 1
+			#fp_percentages_sum += from_paths_percentage
+			#fp_percentages_count += 1
 
-			result_text += (
+			mf += most_frequent_count
+			mfr += number_of_detections
+			sp += from_paths_detection_count
+			spr += most_frequent_count
+
+			'''result_text += (
 				  'm.f.: ' + "{:3.0f}".format( most_frequent_percentage ) + '% '
 				+ '(' + "{:3.0f}".format( most_frequent_count ) + ' x ' + "{:4.0f}".format( most_frequent[ 0 ] ) + '), '
 				+ "{:3.0f}".format( from_paths_percentage ) + '% from ' + str(from_paths_count) + ' path(s)\n'
@@ -69,9 +81,19 @@ class PathCongruence( ValidationModule ):
 			for i,item in enumerate( id_distribution_sorted[1:] ):
 				result_text += "{:3.0f}".format( sum( item[1].values() ) ) + ' x ' + "{:4.0f}".format(item[0]) + ', '
 			result_text += ')\n'
+			'''
 
-		result_text += 'most frequent id average = ' + "{:0.2f}".format( mf_percentages_sum / mf_percentages_count ) + '% (which on average make up '
+		'''result_text += 'most frequent id average = ' + "{:0.2f}".format( mf_percentages_sum / mf_percentages_count ) + '% (which on average make up '
 		result_text += "{:0.2f}".format( fp_percentages_sum / fp_percentages_count ) + '% of the associated paths)\n\n'
-		return result_text
+		return result_text'''
 
+		'''return (
+			  'Kongruenz: ' + "{:0.2f}".format( mf_percentages_sum / mf_percentages_count ) + '%\n'
+			+ 'Ueberschuss: ' + "{:0.2f}".format( fp_percentages_sum / fp_percentages_count ) + '%\n'
+		)'''
+
+		return (
+			  'Kongruenz: ' + "{:0.2f}".format( mf*100.0 / mfr ) + '%\n'
+			+ 'Ueberschuss: ' + "{:0.2f}".format( sp*100.0 / spr - 100.0 ) + '%\n'
+		)
 

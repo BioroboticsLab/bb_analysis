@@ -29,14 +29,15 @@ class PairsContinuity( ValidationModule ):
 
 	def get_result( self ):
 
-		result_text = 'Pairs Continuity (pairs which are discontinuous):\n'
-		for i in range( self.max_gap_size ):
-			result_text += (
-				  'gap size ' + str( i ) + ': '
-				+ "{:4.0f}".format( self.comparable_pairs_available_count[ i ] - self.comparable_pairs_matches_count[ i ] )
-				+ ' of ' + "{:4.0f}".format( self.comparable_pairs_available_count[ i ] ) + ' comparable pairs\n'
-			)
-		result_text += '\n'
-		return result_text
+		#result_text = 'Pairs Continuity (pairs which are discontinuous):\n'
+		gaps_count = 0
+		pairs_count = 0
+		for i in range( 5 ):
+			gaps_count += self.comparable_pairs_available_count[ i ] - self.comparable_pairs_matches_count[ i ]
+			pairs_count += self.comparable_pairs_available_count[ i ]
+
+		value = "{:0.2f}".format( gaps_count*100.0 / pairs_count ) + '%'
+
+		return 'Spruenge: ' + value + '\n'
 
 

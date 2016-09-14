@@ -21,16 +21,17 @@ class EqualityCounter( ValidationModule ):
 
 		if self.comparable_data_available_count > 0:
 			percentage = 100.0 * self.comparable_data_matches_count / self.comparable_data_available_count
-			correctness = "{:0.2f}".format( percentage ) + '% correctness'
+			correctness = "{:0.2f}".format( percentage ) + '%'
 		else:
 			correctness = 'undetermined correctness'
 
-		result_text = (
+		'''result_text = (
 			  'Equality:\n'
 			+ str( self.comparable_data_available_count ) + ' comparable ids found,\n'
 			+ str( self.comparable_data_matches_count )   + ' of these ids match,\n'
 			+ 'giving a ' + correctness + '\n\n'
 		)
-		return result_text
+		return result_text'''
 
+		return 'Identifikation: ' + correctness + '\n'
 

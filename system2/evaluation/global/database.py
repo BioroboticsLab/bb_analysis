@@ -137,7 +137,7 @@ class Connection:
 
 					detection_id, pos_x, pos_y, readability = detection_data
 					if frame == detection.timestamp.frame and detection_id == detection.detection_id:  # TODO check cam number
-						return path_id
+						return tag_id*100 + path_id
 
 		return None
 

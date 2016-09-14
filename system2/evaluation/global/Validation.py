@@ -10,10 +10,9 @@ class Validation( object ):
 
 		self.dset_store = ds.DetectionSetStore()
 		self.modules = [
-			vm.EqualityCounter(),
-			vm.LongPathEqualityCounter(),
+			vm.PathCongruence(),
 			vm.PairsContinuity(),
-			vm.PathCongruence()
+			vm.EqualityCounter()
 		]
 
 
