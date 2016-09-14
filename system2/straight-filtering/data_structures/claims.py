@@ -1,3 +1,7 @@
+import sys
+from munkres import Munkres
+
+
 class ClaimManager( object ):
 
 	def __init__( self ):
@@ -22,6 +26,27 @@ class ClaimManager( object ):
 			if ( not claim.detection.taken ) and ( not path.has_detection_at_timestamp( timestamp ) ):
 				path.add_detection( claim.detection )
 				claim.detection.take()
+
+
+	def allocate_claims_munkres( self, timestamp, pm, dset ):  # less is better
+
+		matrix = [[ sys.maxint for x in range( len(pm.open_paths) ) ] for x in range( len(dset.detections) ) ]
+		matrix_claims = [[ None for x in range( len(pm.open_paths) ) ] for x in range( len(dset.detections) ) ]
+		for claim in self.claims:
+			path = claim.path
+			detection = claim.detection
+			d = dset.detections.index( detection )
+			p = pm.open_paths.index( path )
+			matrix[d][p] = claim.score
+			matrix_claims[d][p] = claim
+
+		munk = Munkres()
+		results = munk.compute( matrix )
+
+		for d,p in results:
+			if ( matrix[d][p] != sys.maxint ):  # ( not claim.detection.taken ) and ( not path.is_fixed_for( timestamp ) )
+				pm.open_paths[ p ].add_detection( matrix_claims[d][p].detection )
+				matrix_claims[d][p].detection.take()
 
 
 	def clear( self ):

@@ -79,6 +79,7 @@ class StraightFiltering():
 
 		# allocate claims
 		self.claim_manager.allocate_claims_greedy( timestamp, self.path_manager )
+		#self.claim_manager.allocate_claims_munkres( timestamp, self.path_manager, dset )
 		self.claim_manager.clear()
 
 		# set unsuccessful paths pending
