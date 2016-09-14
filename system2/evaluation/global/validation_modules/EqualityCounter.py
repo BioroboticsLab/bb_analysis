@@ -25,13 +25,6 @@ class EqualityCounter( ValidationModule ):
 		else:
 			correctness = 'undetermined correctness'
 
-		'''result_text = (
-			  'Equality:\n'
-			+ str( self.comparable_data_available_count ) + ' comparable ids found,\n'
-			+ str( self.comparable_data_matches_count )   + ' of these ids match,\n'
-			+ 'giving a ' + correctness + '\n\n'
-		)
-		return result_text'''
-
 		return 'Identifikation: ' + correctness + '\n'
+
 

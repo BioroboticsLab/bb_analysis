@@ -1,5 +1,4 @@
 from EqualityCounter import EqualityCounter
-from LongPathEqualityCounter import LongPathEqualityCounter
 from PairsContinuity import PairsContinuity
 from PathCongruence import PathCongruence
 

@@ -29,7 +29,6 @@ class PairsContinuity( ValidationModule ):
 
 	def get_result( self ):
 
-		#result_text = 'Pairs Continuity (pairs which are discontinuous):\n'
 		gaps_count = 0
 		pairs_count = 0
 		for i in range( 5 ):
