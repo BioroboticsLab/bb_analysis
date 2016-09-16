@@ -8,34 +8,18 @@ from DetectionEllipse import DetectionEllipse
 
 class PathScene( QtGui.QGraphicsScene ):
 
-	def __init__( self, key_callback, parent ):
+	def __init__( self, parent ):
 
 		super( PathScene, self ).__init__( parent )
-		self.key_callback = key_callback
-
-
-	def keyPressEvent( self, event ):
-
-		if self.key_callback is not None:
-			self.key_callback( event )
 
 
 class PathView( QtGui.QGraphicsView ):
 
-	def __init__(
-			self, parent,
-			ellipse_click_callback = None,
-			key_callback           = None,
-			mouse_move_callback    = None
-		):
+	def __init__( self, parent ):
 
 		QtGui.QGraphicsView.__init__( self, parent )
 
-		self.setMouseTracking( True )
-
-		self.ellipse_click_callback = ellipse_click_callback
-		self.mouse_move_callback = mouse_move_callback
-		self.setScene( PathScene( key_callback, self ) )
+		self.setScene( PathScene( self ) )
 		self.setSceneRect( 0, 0, 4000, 3000 )
 
 		self.scale_amount = 0.1
@@ -79,32 +63,9 @@ class PathView( QtGui.QGraphicsView ):
 		self.scene().addItem( rect )
 
 
-	def render_path( self, path, rainbow_mode = False ):
+	def render_path_partial( self, path, timestamp ):
 
 		detections = path.get_sorted_positioned_detections()
-
-		pen = self.path_pen
-		if rainbow_mode:
-			pen = path.pen
-
-		# path lines
-		for a, b in aux.pairwise( detections ):
-
-			line = QtGui.QGraphicsLineItem(
-				QtCore.QLineF( a.position[ 0 ], a.position[ 1 ], b.position[ 0 ], b.position[ 1 ] )
-			)
-			line.setPen( pen )
-			line.setOpacity( 0.7 )
-			self.scene().addItem( line )
-
-
-	def render_path_partial( self, path, rainbow_mode, timestamp ):
-
-		detections = path.get_sorted_positioned_detections()
-
-		pen = self.path_pen
-		if rainbow_mode:
-			pen = path.pen
 
 		# path lines
 		for a, b in aux.pairwise( detections ):
@@ -115,7 +76,7 @@ class PathView( QtGui.QGraphicsView ):
 				line = QtGui.QGraphicsLineItem(
 					QtCore.QLineF( a.position[ 0 ], a.position[ 1 ], b.position[ 0 ], b.position[ 1 ] )
 				)
-				line.setPen( pen )
+				line.setPen( path.pen )
 				line.setOpacity( ( 1 - diff*1.0/30 ) * 0.7 )
 				self.scene().addItem( line )
 
@@ -140,20 +101,15 @@ class PathView( QtGui.QGraphicsView ):
 
 
 	# show detections with circles
-	def render_detections( self, dset, current_paths = [], rainbow_mode = False ):
+	def render_detections( self, dset ):
 
 		for d in dset.detections.values():
 			if not d.is_unpositioned():
-				circle = DetectionEllipse( d, self.ellipse_click_callback )
+				circle = DetectionEllipse( d )
 
 				if d.path is not None:
-					if rainbow_mode:
-						circle.setPen( d.path.pen )
-					else:
-						if d.path in current_paths:
-							circle.setPen( self.circle_selected_pen )
-						else:
-							circle.setPen( self.circle_blocked_pen )
+					circle.setPen( d.path.pen )
+
 				else:
 					circle.setPen( self.circle_pen )
 
@@ -188,10 +144,5 @@ class PathView( QtGui.QGraphicsView ):
 		self.scale_current = scale_new
 		self.scale( scale_apply, scale_apply )
 		#self.centerOn( scale_center )
-
-
-	def mouseMoveEvent( self, event ):
-
-		self.mouse_move_callback()
 
 

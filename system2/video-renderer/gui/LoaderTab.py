@@ -8,7 +8,9 @@ from PyQt4 import QtGui, QtCore
 from bb_binary import Frame, Repository, load_frame_container, to_datetime, convert_frame_to_numpy
 
 import config
+import auxiliary as aux
 import data_structures as ds
+from PathView import PathView
 
 
 class LoaderTab( QtGui.QWidget ):
@@ -19,11 +21,28 @@ class LoaderTab( QtGui.QWidget ):
 		self.parent = parent
 		self.app = app
 
+		self.dset_store = None
+		self.path_manager = None
+
+		self.current_timestamp = None
+
+
+		self.image = QtGui.QImage( 1200, 900, QtGui.QImage.Format_RGB32 )
+		color = QtGui.QColor(   0,   0,   0 )
+		self.image.fill( color )
+
+		self.painter = QtGui.QPainter( self.image )
+		self.painter.setRenderHint( QtGui.QPainter.Antialiasing )
+
+
 		self.build_layout()
 
 
 	# init GUI Elements
 	def build_layout( self ):
+
+		# column 1
+
 
 		# data box
 
@@ -132,24 +151,56 @@ class LoaderTab( QtGui.QWidget ):
 		paths_box.setLayout( paths_grid )
 
 
-		# to editor
+		# options box
 
-		self.goto_editor_button = QtGui.QPushButton( 'To Editor', self )
-		self.goto_editor_button.clicked.connect( self.goto_editor )
+		self.darken_image_checkbox = QtGui.QCheckBox( 'Darken Image', self )
+
+		options_box = QtGui.QGroupBox( 'Options', self )
+		options_grid = QtGui.QGridLayout( self )
+		options_grid.addWidget( self.darken_image_checkbox, 0, 0, 1, 1 )
+		options_box.setLayout( options_grid )
+
+
+		# start button
+		self.start_render_button = QtGui.QPushButton( 'Start Rendering', self )
+		self.start_render_button.clicked.connect( self.start_render )
+
+
+		column_1 = QtGui.QVBoxLayout()
+		column_1.addWidget( data_box )
+		column_1.addWidget( images_box )
+		column_1.addWidget( paths_box )
+		column_1.addWidget( options_box )
+		column_1.addWidget( self.start_render_button )
+		column_1.addStretch( 1 )
+
+
+		# column 2
+
+		# view
+		self.path_view = PathView( self )
+		self.path_view.setRenderHint( QtGui.QPainter.Antialiasing, True )
+
+		# time progress
+		self.time_lable = QtGui.QLabel( self )
+		self.time_progress = QtGui.QProgressBar( self )
+		self.time_progress.setMinimum( 0 )
+
+		time_progress_box = QtGui.QHBoxLayout()
+		time_progress_box.addWidget( self.time_lable )
+		time_progress_box.addWidget( self.time_progress )
+		time_progress_box.addStretch( 1 )
+
+		column_2 = QtGui.QVBoxLayout()
+		column_2.addWidget( self.path_view )
+		column_2.addLayout( time_progress_box )
 
 
 		# layout
 
-		v_box = QtGui.QVBoxLayout()
-		v_box.addWidget( data_box )
-		v_box.addWidget( images_box )
-		v_box.addWidget( paths_box )
-		v_box.addWidget( self.goto_editor_button )
-		v_box.addStretch( 1 )
-
 		h_box = QtGui.QHBoxLayout()
-		h_box.addLayout( v_box )
-		h_box.addStretch( 1 )
+		h_box.addLayout( column_1 )
+		h_box.addLayout( column_2 )
 
 		self.setLayout( h_box )
 
@@ -178,12 +229,10 @@ class LoaderTab( QtGui.QWidget ):
 
 		self.block_inputs( True )
 
-		self.parent.dset_store = ds.DetectionSetStore()
-		self.parent.path_manager = None
+		self.dset_store = ds.DetectionSetStore()
+		self.path_manager = None
 		self.paths_load_progress.setValue( 0 )
 		self.paths_load_label.setText( '' )
-
-		dset_store = self.parent.dset_store
 
 		try:
 
@@ -208,7 +257,7 @@ class LoaderTab( QtGui.QWidget ):
 				#frame_container.fromTimestamp              # already available
 				#frame_container.toTimestamp                # already available
 
-				dset_store.source = frame_container.dataSources[ 0 ].filename
+				self.dset_store.source = frame_container.dataSources[ 0 ].filename
 
 				previous_timestamp = None
 
@@ -227,7 +276,7 @@ class LoaderTab( QtGui.QWidget ):
 					previous_timestamp = timestamp
 
 					dset = ds.DetectionSet()
-					dset_store.store[ timestamp ] = dset
+					self.dset_store.store[ timestamp ] = dset
 
 					data = convert_frame_to_numpy( frame )
 
@@ -241,14 +290,12 @@ class LoaderTab( QtGui.QWidget ):
 							detection_data[ 'decodedId' ][::-1]  # reversed, we want least significant bit last
 						) )
 
-					dset.build_kd_tree()
-
 					frame_index += 1
 
 					self.data_load_progress.setValue( frame_index - config.FRAME_START )
 					self.app.processEvents()
 
-				self.data_load_label.setText( str( len( dset_store.store ) ) + ' frames loaded' )
+				self.data_load_label.setText( str( len( self.dset_store.store ) ) + ' frames loaded' )
 				self.app.processEvents()
 
 				# break because we only load the first fname
@@ -263,17 +310,15 @@ class LoaderTab( QtGui.QWidget ):
 
 	def load_tracks( self ):
 
-		if self.parent.dset_store is None:
+		if self.dset_store is None:
 			print 'Error: no data folder loaded'
 			return
 
 		self.block_inputs( True )
 
-		dset_store = self.parent.dset_store
-		dset_store.delete_path_associations()
+		self.dset_store.delete_path_associations()
 
-		self.parent.path_manager = ds.PathManager( config.PATHS_FILE )
-		path_manager = self.parent.path_manager
+		self.path_manager = ds.PathManager( config.PATHS_FILE )
 
 		if os.path.isfile( config.PATHS_FILE ):
 
@@ -282,7 +327,7 @@ class LoaderTab( QtGui.QWidget ):
 				with open( config.PATHS_FILE, 'rb' ) as paths_file:
 					input = pickle.load( paths_file )
 
-				if dset_store.source != input[ 'source' ]:
+				if self.dset_store.source != input[ 'source' ]:
 					print 'Warning: data source for detections and paths do not match'
 				paths_input = input[ 'paths' ]
 
@@ -291,16 +336,16 @@ class LoaderTab( QtGui.QWidget ):
 
 				for i, tag_id in enumerate( paths_input.keys() ):
 
-					path_manager.paths[ tag_id ] = {}
+					self.path_manager.paths[ tag_id ] = {}
 
 					for path_id in paths_input[ tag_id ].keys():
 
 						path = ds.Path( tag_id )
-						path_manager.paths[ tag_id ][ path_id ] = path
+						self.path_manager.paths[ tag_id ][ path_id ] = path
 
 						for frame, detection_data in paths_input[ tag_id ][ path_id ].items():
 
-							timestamp = dset_store.get_timestamp( frame )
+							timestamp = self.dset_store.get_timestamp( frame )
 							if timestamp is not None:
 
 								detection_id, pos_x, pos_y, readability = detection_data
@@ -308,7 +353,7 @@ class LoaderTab( QtGui.QWidget ):
 								# data point is associated with a detection from the pipeline output
 								if detection_id is not None:
 
-									dset = dset_store.get( timestamp )
+									dset = self.dset_store.get( timestamp )
 
 									if detection_id in dset.detections:
 										detection = dset.detections[ detection_id ]
@@ -359,12 +404,104 @@ class LoaderTab( QtGui.QWidget ):
 
 		self.data_load_button.setDisabled( boolean )
 		self.paths_load_button.setDisabled( boolean )
-		self.goto_editor_button.setDisabled( boolean )
+		self.start_render_button.setDisabled( boolean )
 		self.app.processEvents()
 
 
-	def goto_editor( self ):
+	def start_render( self ):
 
-		self.parent.goto_editor()
+		if self.dset_store is None or self.path_manager is None:
+			print 'Error: no data loaded'
+			return
+
+
+		self.block_inputs( True )
+
+		if len( self.dset_store.store ) > 0:
+
+			timestamps = self.dset_store.store.keys()
+			start_timestamp = min( timestamps )
+			end_timestamp = max( timestamps )
+			self.current_timestamp = start_timestamp
+			duration = start_timestamp.frames_difference( end_timestamp ) + 1
+
+			self.time_progress.setMaximum( duration )
+
+			for x in range( 0, duration ):
+
+				self.time_lable.setText( 'frame: ' + self.current_timestamp.time_name )
+				self.render_path_view()
+				self.time_progress.setValue( x+1 )
+				self.app.processEvents()
+
+				self.current_timestamp = self.current_timestamp.get_next()
+				if self.current_timestamp is None:
+					break
+
+		self.block_inputs( False )
+
+
+	def render_path_view( self ):
+
+		# clear
+		self.path_view.clear()
+
+		# render background
+		if True: #self.show_image_checkbox.isChecked():
+			self.path_view.render_frame(
+				self.current_timestamp,
+				darken = self.darken_image_checkbox.isChecked()
+			)
+		else:
+			self.path_view.render_area()
+
+		# render paths
+		for tag_id in self.path_manager.paths:
+			for path in self.path_manager.paths[ tag_id ].values():
+				self.path_view.render_path_partial( path, self.current_timestamp )
+
+		# render detections
+		self.path_view.render_detections( self.dset_store.get( self.current_timestamp ) )
+
+		'''# render all positions
+		if self.show_positions_checkbox.isChecked():
+			for tag_id in self.path_manager.paths:
+				for path in self.path_manager.paths[ tag_id ].values():
+					timestamp = self.current_timestamp
+					if timestamp in path.detections:
+						detection = path.detections[ timestamp ]
+						if detection.is_empty() and not detection.is_unpositioned():
+							if path in self.current_paths:
+								self.path_view.render_position( detection.position, True )
+							else:
+								self.path_view.render_position( detection.position, False )
+
+		# show only position of current path
+		else:
+			for path in self.current_paths:
+				timestamp = self.current_timestamp
+				if timestamp in path.detections:
+					detection = path.detections[ timestamp ]
+					if detection.is_empty() and not detection.is_unpositioned():
+						self.path_view.render_position( detection.position, True )
+		'''
+
+		# render ids
+		for tag_id in self.path_manager.paths:
+			for path in self.path_manager.paths[ tag_id ].values():
+				timestamp = self.current_timestamp
+				if timestamp in path.detections:
+					detection = path.detections[ timestamp ]
+					if ( not detection.is_unpositioned() ) and (
+						   not detection.is_empty()
+						or False #self.show_positions_checkbox.isChecked()
+						or path in self.current_paths
+					):
+						self.path_view.render_id( detection.position, path.tag_id )
+
+		'''self.path_view.scene().render( self.painter )
+
+		file_name = 'image_' + "{0:03d}".format( self.current_timestamp.frame ) + '.png'
+		self.image.save( file_name )'''
 
 
