@@ -478,7 +478,7 @@ class LoaderTab( QtGui.QWidget ):
 
 		# render to file
 		self.image.fill( self.background_color )
-		self.path_view.scene().render( self.painter )
+		self.path_view.scene().render( self.painter, QtCore.QRectF( 0.0, 0.0, 1200.0, 900.0 ), QtCore.QRectF( 0.0, 0.0, 4000.0, 3000.0 ) )
 		file_name = 'images/image_' + "{0:03d}".format( self.current_timestamp.frame ) + '.png'
 		self.image.save( file_name )
 
