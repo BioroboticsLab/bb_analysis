@@ -14,5 +14,7 @@ Convert to video with the following command:
 * [Pipeline data](https://github.com/BioroboticsLab/bb_binary)
 * [Path file](../path-file-format.md)
 
+## Screenshot
+
 ![screenshot](./screenshot.png)
 

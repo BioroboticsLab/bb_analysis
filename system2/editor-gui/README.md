@@ -41,5 +41,7 @@ That means truth detections are associated with decoded detections by id.
 These ids are not necessarily the same for a recalculated pipeline output.
 Using the script match.py to match a paths file against a new pipeline output will update the ids.
 
+## Screenshot
+
 ![screenshot](./screenshot.png)
 
