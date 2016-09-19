@@ -2,6 +2,8 @@
 
 A gui for viewing and editing ground truth paths.
 
+The input and output format is described [here](../path-file-format.md).
+
 ## Editing
 
 * The table of detections always shows a gapless sequence.
@@ -39,36 +41,5 @@ That means truth detections are associated with decoded detections by id.
 These ids are not necessarily the same for a recalculated pipeline output.
 Using the script match.py to match a paths file against a new pipeline output will update the ids.
 
-## Paths File
-
-Paths are saved in a Python pickle file.
-
-```python
-{
-	'source': 'filename_of_video.mkv',
-	'paths': {
-		tag_id: {                  # int
-			path_id: {             # int
-				frame_number: (    # int
-					detection_id,  # int
-					position_x,    # int
-					position_y,    # int
-					readability    # int
-				)
-			}
-		}
-	}
-}
-```
-
-The readability value should be interpreted as follows:
-
-```python
-class Readability:
-	Unknown    = 0
-	Completely = 1
-	Partially  = 2
-	Not_At_All = 3
-```
-
+![screenshot](./screenshot.png)
 

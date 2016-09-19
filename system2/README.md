@@ -1,6 +1,8 @@
 # bb_analysis system 2
 
-This program depends on our custom [Cap'n Proto binary format](https://github.com/BioroboticsLab/bb_binary).
+This program depends on our custom [Cap'n Proto binary format](https://github.com/BioroboticsLab/bb_binary) for input.
+
+It further uses a [custom Python pickle file format](path-file-format.md) for the tracking output and the ground truth paths.
 
 ## Usage
 
