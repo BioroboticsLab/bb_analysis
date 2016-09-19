@@ -30,7 +30,6 @@ class PathView( QtGui.QGraphicsView ):
 		self.scale( self.scale_current, self.scale_current )
 
 		black_color      = QtGui.QColor(   0,   0,   0 )
-		grey_color       = QtGui.QColor( 220, 220, 220 )
 		white_color      = QtGui.QColor( 255, 255, 255 )
 
 		orange_color     = QtGui.QColor( 255, 132,  64 )
@@ -48,19 +47,8 @@ class PathView( QtGui.QGraphicsView ):
 		self.position_selected_pen = QtGui.QPen( green_color,      10 )
 		self.path_pen              = QtGui.QPen( light_blue_color, 10 )
 
-		self.area_brush    = QtGui.QBrush( grey_color )
 		self.overlay_brush = QtGui.QBrush( black_color )
 		self.id_text_brush = QtGui.QBrush( white_color )
-
-
-	# draw background area
-	def render_area( self ):
-
-		# active area, corresponds to area visible for camera
-		rect = QtGui.QGraphicsRectItem( 0, 0, 4000, 3000 )
-		rect.setPen( self.no_pen )
-		rect.setBrush( self.area_brush )
-		self.scene().addItem( rect )
 
 
 	def render_path_partial( self, path, timestamp ):

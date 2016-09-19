@@ -1,6 +1,6 @@
+import os
 import pytz
 import pickle
-import os.path
 import numpy as np
 from datetime import datetime
 from PyQt4 import QtGui, QtCore
@@ -28,11 +28,18 @@ class LoaderTab( QtGui.QWidget ):
 
 
 		self.image = QtGui.QImage( 1200, 900, QtGui.QImage.Format_RGB32 )
-		color = QtGui.QColor(   0,   0,   0 )
-		self.image.fill( color )
+		self.background_color = QtGui.QColor( 0, 0, 0 )
+		self.image.fill( self.background_color )
 
 		self.painter = QtGui.QPainter( self.image )
 		self.painter.setRenderHint( QtGui.QPainter.Antialiasing )
+
+		directory = os.path.dirname( 'images/' )
+		if not os.path.exists( directory ):
+			try:
+				os.makedirs( directory )
+			except:
+				pass
 
 
 		self.build_layout()
@@ -447,13 +454,10 @@ class LoaderTab( QtGui.QWidget ):
 		self.path_view.clear()
 
 		# render background
-		if True: #self.show_image_checkbox.isChecked():
-			self.path_view.render_frame(
-				self.current_timestamp,
-				darken = self.darken_image_checkbox.isChecked()
-			)
-		else:
-			self.path_view.render_area()
+		self.path_view.render_frame(
+			self.current_timestamp,
+			darken = self.darken_image_checkbox.isChecked()
+		)
 
 		# render paths
 		for tag_id in self.path_manager.paths:
@@ -463,45 +467,19 @@ class LoaderTab( QtGui.QWidget ):
 		# render detections
 		self.path_view.render_detections( self.dset_store.get( self.current_timestamp ) )
 
-		'''# render all positions
-		if self.show_positions_checkbox.isChecked():
-			for tag_id in self.path_manager.paths:
-				for path in self.path_manager.paths[ tag_id ].values():
-					timestamp = self.current_timestamp
-					if timestamp in path.detections:
-						detection = path.detections[ timestamp ]
-						if detection.is_empty() and not detection.is_unpositioned():
-							if path in self.current_paths:
-								self.path_view.render_position( detection.position, True )
-							else:
-								self.path_view.render_position( detection.position, False )
-
-		# show only position of current path
-		else:
-			for path in self.current_paths:
-				timestamp = self.current_timestamp
-				if timestamp in path.detections:
-					detection = path.detections[ timestamp ]
-					if detection.is_empty() and not detection.is_unpositioned():
-						self.path_view.render_position( detection.position, True )
-		'''
-
 		# render ids
 		for tag_id in self.path_manager.paths:
 			for path in self.path_manager.paths[ tag_id ].values():
 				timestamp = self.current_timestamp
 				if timestamp in path.detections:
 					detection = path.detections[ timestamp ]
-					if ( not detection.is_unpositioned() ) and (
-						   not detection.is_empty()
-						or False #self.show_positions_checkbox.isChecked()
-						or path in self.current_paths
-					):
+					if ( not detection.is_unpositioned() ) and ( not detection.is_empty() ):
 						self.path_view.render_id( detection.position, path.tag_id )
 
-		'''self.path_view.scene().render( self.painter )
-
-		file_name = 'image_' + "{0:03d}".format( self.current_timestamp.frame ) + '.png'
-		self.image.save( file_name )'''
+		# render to file
+		self.image.fill( self.background_color )
+		self.path_view.scene().render( self.painter )
+		file_name = 'images/image_' + "{0:03d}".format( self.current_timestamp.frame ) + '.png'
+		self.image.save( file_name )
 
 
