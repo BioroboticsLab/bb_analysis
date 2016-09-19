@@ -1,8 +1,0 @@
-convert 000.png -crop 1200x900+386+71 +repage 000_out.png
-
-for i in *.png; do
-  convert "$i" -crop 1200x900+386+71 +repage "$i"
-done
-
-avconv -framerate 6 -i %03d.png -c:v libx264 -r 6 -pix_fmt yuv420p out.mp4
-
