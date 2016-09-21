@@ -16,3 +16,9 @@ Will output the file bit-flip-probability.pkl.
 
 Use plot.py to plot the matrix for visual comparisons.
 
+## Input
+
+* Adjusted config.py
+* [Pipeline data](https://github.com/BioroboticsLab/bb_binary)
+* [Ground Truth Path file](../path-file-format.md)
+
