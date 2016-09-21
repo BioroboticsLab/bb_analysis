@@ -37,6 +37,6 @@ class PairsContinuity( ValidationModule ):
 
 		value = "{:0.2f}".format( gaps_count*100.0 / pairs_count ) + '%'
 
-		return 'Spruenge: ' + value + '\n'
+		return 'Jumps: ' + value + '\n'
 
 

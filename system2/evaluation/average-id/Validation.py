@@ -69,11 +69,11 @@ class Validation( object ):
 
 			if len( path.detections ) >= 10:
 
-				for iterations in range( 10 ):
+				for iterations in range( 100 ):
 
-					path_sample = path
-					subset_size = 10
-					#path_sample = path.random_subset( subset_size )
+					#path_sample = path
+					subset_size = 20
+					path_sample = path.random_subset( subset_size )
 
 					total += 1
 					mean_id       = path_sample.determine_average_id_by_mean()

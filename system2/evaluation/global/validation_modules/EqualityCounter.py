@@ -25,6 +25,6 @@ class EqualityCounter( ValidationModule ):
 		else:
 			correctness = 'undetermined correctness'
 
-		return 'Identifikation: ' + correctness + '\n'
+		return 'Identification: ' + correctness + '\n'
 
 

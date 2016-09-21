@@ -53,8 +53,8 @@ class PathCongruence( ValidationModule ):
 			spr += most_frequent_count
 
 		return (
-			  'Kongruenz: ' + "{:0.2f}".format( mf*100.0 / mfr ) + '%\n'
-			+ 'Ueberschuss: ' + "{:0.2f}".format( sp*100.0 / spr - 100.0 ) + '%\n'
+			  'Congruence: ' + "{:0.2f}".format( mf*100.0 / mfr ) + '%\n'
+			+ 'Excesss: ' + "{:0.2f}".format( sp*100.0 / spr - 100.0 ) + '%\n'
 		)
 
 
