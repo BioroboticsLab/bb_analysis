@@ -2,6 +2,12 @@
 
 A gui for viewing and editing ground truth paths.
 
+## Input
+
+* Adjusted config.py
+* [Pipeline data](https://github.com/BioroboticsLab/bb_binary)
+* [Path file](../path-file-format.md)
+
 The input and output format is described [here](../path-file-format.md).
 
 ## Editing
