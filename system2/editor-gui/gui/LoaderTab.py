@@ -186,20 +186,14 @@ class LoaderTab( QtGui.QWidget ):
 		dset_store = self.parent.dset_store
 
 		try:
-
-			repo = Repository.load( config.DATA_FOLDER )
+			repo = Repository( config.DATA_FOLDER )
 			start_time = datetime(
 				config.DATE[ 0 ], config.DATE[ 1 ], config.DATE[ 2 ],
 				config.TIME[ 0 ], config.TIME[ 1 ],
 				tzinfo=pytz.utc
 			)
-			end_time = datetime(
-				config.DATE[ 0 ], config.DATE[ 1 ], config.DATE[ 2 ],
-				config.TIME[ 0 ], config.TIME[ 1 ]+1,
-				tzinfo=pytz.utc
-			)
 
-			fnames = repo.iter_fnames( begin=start_time, end=end_time )
+			fnames = repo.iter_fnames( begin=start_time )
 			for fname in fnames:
 
 				frame_container = load_frame_container( fname )
@@ -255,6 +249,7 @@ class LoaderTab( QtGui.QWidget ):
 				break
 
 		except:
+
 
 			pass
 

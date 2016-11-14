@@ -11,7 +11,7 @@ It further uses a [custom Python pickle file format](path-file-format.md) for th
 	* Get pipeline output in the [Cap'n Proto binary format](https://github.com/BioroboticsLab/bb_binary).
 	* Get video file and convert to image sequence.
 		```
-		ffmpeg -i video.mkv $filename%03d.jpg
+		ffmpeg -c:v hevc -r 3 -i video.mkv -f image2 %03d.jpg
 		```
 
 2. Preparation
