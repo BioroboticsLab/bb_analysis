@@ -60,12 +60,12 @@ class PathView( QtGui.QGraphicsView ):
 
 			diff = b.timestamp.frames_difference( timestamp )
 
-			if diff < 30 and diff >= 0:
+            if diff < config.VIDEO_MAX_PATH_LENGTH and diff >= 0:
 				line = QtGui.QGraphicsLineItem(
 					QtCore.QLineF( a.position[ 0 ], a.position[ 1 ], b.position[ 0 ], b.position[ 1 ] )
 				)
 				line.setPen( path.pen )
-				line.setOpacity( ( 1 - diff*1.0/30 ) * 0.7 )
+				line.setOpacity( ( 1 - diff*1.0/config.VIDEO_MAX_PATH_LENGTH ) * 0.7 )
 				self.scene().addItem( line )
 
 
