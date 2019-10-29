@@ -4,8 +4,8 @@ from PyQt4 import QtGui, QtCore
 
 import auxiliary as aux
 import data_structures as ds
-from PathView import PathView
-from TagView import TagView
+from .PathView import PathView
+from .TagView import TagView
 
 
 class EditorTab( QtGui.QSplitter ):
@@ -208,7 +208,7 @@ class EditorTab( QtGui.QSplitter ):
 
 		if len( self.dset_store.store ) > 0:
 
-			timestamps = self.dset_store.store.keys()
+			timestamps = list(self.dset_store.store.keys())
 			self.start_timestamp = min( timestamps )
 			self.end_timestamp = max( timestamps )
 			self.set_current_timestamp( self.start_timestamp )
@@ -239,11 +239,11 @@ class EditorTab( QtGui.QSplitter ):
 			for i, tag_id in enumerate( self.path_manager.paths.keys() ):
 
 				path_output[ tag_id ] = {}
-				for path_id in self.path_manager.paths[ tag_id ].keys():
+				for path_id in list(self.path_manager.paths[ tag_id ].keys()):
 
 					path_output[ tag_id ][ path_id ] = {}
 					detections = self.path_manager.paths[ tag_id ][ path_id ].detections
-					for timestamp, detection in detections.items():
+					for timestamp, detection in list(detections.items()):
 
 						if not detection.is_unpositioned():
 
@@ -256,11 +256,11 @@ class EditorTab( QtGui.QSplitter ):
 
 				self.save_progress.setValue( i+1 )
 
-	 		with open( self.path_manager.filename, 'wb' ) as paths_file:
+			with open( self.path_manager.filename, 'wb' ) as paths_file:
 				pickle.dump( output, paths_file )
 
 		else:
-			print 'Warning: nothing to save'
+			print('Warning: nothing to save')
 
 
 	def select_all( self ):
@@ -269,8 +269,8 @@ class EditorTab( QtGui.QSplitter ):
 			return
 
 		paths = []
-		for d in self.path_manager.paths.values():
-			paths.extend( d.values() )
+		for d in list(self.path_manager.paths.values()):
+			paths.extend( list(d.values()) )
 
 		self.build_path_details( paths )
 
@@ -320,7 +320,7 @@ class EditorTab( QtGui.QSplitter ):
 			tag_id_node.tag_id = tag_id
 			tag_id_node.path_id = None
 
-			for path_id, path in self.path_manager.paths[ tag_id ].items():
+			for path_id, path in list(self.path_manager.paths[ tag_id ].items()):
 				path_node = QtGui.QTreeWidgetItem( tag_id_node, [ 'path_' + str( path_id ), '' ] )
 				path_node.tag_id = tag_id
 				path_node.path_id = path_id
@@ -337,7 +337,7 @@ class EditorTab( QtGui.QSplitter ):
 			path = self.path_manager.get_path( item.tag_id, item.path_id )
 			self.build_path_details( [ path ] )
 		else:
-			paths = self.path_manager.paths[ item.tag_id ].values()
+			paths = list(self.path_manager.paths[ item.tag_id ].values())
 			self.build_path_details( paths )
 
 
@@ -511,7 +511,7 @@ class EditorTab( QtGui.QSplitter ):
 		# show all positions
 		if self.show_positions_checkbox.isChecked():
 			for tag_id in self.path_manager.paths:
-				for path in self.path_manager.paths[ tag_id ].values():
+				for path in list(self.path_manager.paths[ tag_id ].values()):
 					timestamp = self.current_timestamp
 					if timestamp in path.detections:
 						detection = path.detections[ timestamp ]
@@ -532,7 +532,7 @@ class EditorTab( QtGui.QSplitter ):
 
 		if self.show_ids_checkbox.isChecked():
 			for tag_id in self.path_manager.paths:
-				for path in self.path_manager.paths[ tag_id ].values():
+				for path in list(self.path_manager.paths[ tag_id ].values()):
 					timestamp = self.current_timestamp
 					if timestamp in path.detections:
 						detection = path.detections[ timestamp ]

@@ -14,11 +14,11 @@ file_merged = 'paths_merged.pkl'
 def main():
 
 	if not os.path.isfile( file_1 ):
-		print 'Error: file not found'
+		print('Error: file not found')
 		return
 
 	if not os.path.isfile( file_2 ):
-		print 'Error: file not found'
+		print('Error: file not found')
 		return
 
 
@@ -29,7 +29,7 @@ def main():
 		input_2 = pickle.load( paths_file_2 )
 
 	if input_1[ 'source' ] != input_2[ 'source' ]:
-		print 'Error: data sources do not match'
+		print('Error: data sources do not match')
 		return
 
 
@@ -37,7 +37,7 @@ def main():
 	paths_input_2 = input_2[ 'paths' ]
 
 	# merging from paths_input_2 into paths_input_1
-	for tag_id in paths_input_2.keys():
+	for tag_id in list(paths_input_2.keys()):
 
 		if tag_id not in paths_input_1:
 
@@ -48,7 +48,7 @@ def main():
 			highest_key = sorted( paths_input_1[ tag_id ].keys() )[ -1 ]
 			next_key = highest_key + 1
 
-			for path in paths_input_2[ tag_id ].values():
+			for path in list(paths_input_2[ tag_id ].values()):
 
 				paths_input_1[ tag_id ][ next_key ] = path
 				next_key += 1
@@ -56,7 +56,7 @@ def main():
 	with open( file_merged, 'wb' ) as paths_file_merged:
 		pickle.dump( input_1, paths_file_merged )
 
-	print 'done'
+	print('done')
 
 
 main()

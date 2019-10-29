@@ -1,8 +1,8 @@
 from PyQt4 import QtGui, QtCore
 
 import auxiliary as aux
-from TagSection import TagSection
-from RotateButton import RotateButton
+from .TagSection import TagSection
+from .RotateButton import RotateButton
 
 
 class TagView( QtGui.QGraphicsView ):

@@ -3,7 +3,7 @@ from PyQt4 import QtGui, QtCore
 
 import config
 import auxiliary as aux
-from DetectionEllipse import DetectionEllipse
+from .DetectionEllipse import DetectionEllipse
 
 
 class PathScene( QtGui.QGraphicsScene ):
@@ -120,7 +120,7 @@ class PathView( QtGui.QGraphicsView ):
 	# show detections with circles
 	def render_detections( self, dset, current_paths = [], rainbow_mode = False ):
 
-		for d in dset.detections.values():
+		for d in list(dset.detections.values()):
 			if not d.is_unpositioned():
 				circle = DetectionEllipse( d, self.ellipse_click_callback )
 

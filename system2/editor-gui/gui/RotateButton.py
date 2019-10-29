@@ -11,7 +11,7 @@ class RotateButton( QtGui.QGraphicsEllipseItem ):
 		super( RotateButton, self ).__init__( x, y, 20, 20 )
 
 		text_brush = QtGui.QBrush( QtGui.QColor( 60, 60, 60 ) )
-		text = QtGui.QGraphicsSimpleTextItem( u'↻', self )
+		text = QtGui.QGraphicsSimpleTextItem( '↻', self )
 		text.setPos( x+3.8, y+1.6 )
 		text.setBrush( text_brush )
 

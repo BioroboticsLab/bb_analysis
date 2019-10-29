@@ -1,2 +1,2 @@
-from start_gui import start_gui
+from .start_gui import start_gui
 

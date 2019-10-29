@@ -17,7 +17,7 @@ def main():
 
 	# loading data
 	if not os.path.exists( config.DATA_FOLDER ):
-		print 'Error: folder not found'
+		print('Error: folder not found')
 		return
 
 	dset_store = ds.DetectionSetStore()
@@ -76,25 +76,25 @@ def main():
 
 	# loading truth
 	if not os.path.isfile( config.PATHS_FILE ):
-		print 'Error: file not found'
+		print('Error: file not found')
 		return
 
 	with open( config.PATHS_FILE, 'rb' ) as paths_file:
 		input = pickle.load( paths_file )
 
 	if input[ 'source' ] != dset_store.source:
-		print 'Error: data sources do not match'
+		print('Error: data sources do not match')
 		return
 
 	paths_input = input[ 'paths' ]
 
 
 	# match
-	for tag_id in paths_input.keys():
+	for tag_id in list(paths_input.keys()):
 
-		for path_id in paths_input[ tag_id ].keys():
+		for path_id in list(paths_input[ tag_id ].keys()):
 
-			for frame,detection_data in paths_input[ tag_id ][ path_id ].items():
+			for frame,detection_data in list(paths_input[ tag_id ][ path_id ].items()):
 
 				old_detection_id, pos_x, pos_y, readability = detection_data
 				timestamp = dset_store.get_timestamp( frame )
@@ -124,7 +124,7 @@ def main():
 		pickle.dump( input, paths_file )
 
 
-	print 'done'
+	print('done')
 
 
 main()

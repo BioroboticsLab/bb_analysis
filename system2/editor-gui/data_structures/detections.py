@@ -35,13 +35,13 @@ class DetectionSetStore( object ):
 
 	def get_timestamp( self, frame ):
 
-		return next( ( t for t in self.store.keys() if t.frame == frame ), None )
+		return next( ( t for t in list(self.store.keys()) if t.frame == frame ), None )
 
 
 	def delete_path_associations( self ):
 
-		for dset in self.store.values():
-			for detection in dset.detections.values():
+		for dset in list(self.store.values()):
+			for detection in list(dset.detections.values()):
 				detection.path = None
 
 
@@ -60,7 +60,7 @@ class DetectionSet( object ):
 
 	def build_kd_tree( self ):
 
-		positions = [ detection.position for detection in self.detections.values() ]
+		positions = [ detection.position for detection in list(self.detections.values()) ]
 		self.kd_tree = KDTree( np.array( positions ), leaf_size = 10, metric = 'euclidean' )
 
 
@@ -70,7 +70,7 @@ class DetectionSet( object ):
 		distance = distances[ 0 ][ 0 ]
 		index = indices[ 0 ][ 0 ]
 		if distance <= limit:
-			return self.detections.values()[ index ]
+			return list(self.detections.values())[ index ]
 		else:
 			return None
 

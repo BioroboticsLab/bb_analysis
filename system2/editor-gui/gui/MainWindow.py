@@ -1,7 +1,7 @@
 from PyQt4 import QtGui
 
-from LoaderTab import LoaderTab
-from EditorTab import EditorTab
+from .LoaderTab import LoaderTab
+from .EditorTab import EditorTab
 
 
 class MainWindow( QtGui.QMainWindow ):
@@ -34,11 +34,11 @@ class MainWindow( QtGui.QMainWindow ):
 	def goto_editor( self ):
 
 		if self.dset_store is None:
-			print 'Error: no data folder loaded'
+			print('Error: no data folder loaded')
 			return
 
 		if self.path_manager is None:
-			print 'Error: no tracks file loaded'
+			print('Error: no tracks file loaded')
 			return
 
 		self.editor_tab.activate_window()

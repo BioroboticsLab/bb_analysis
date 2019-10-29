@@ -33,8 +33,8 @@ class PathManager( object ):
 		old_tag_id = path.tag_id
 
 		# deleting from old position
-		if path in self.paths[ old_tag_id ].values():
-			old_path_id = self.paths[ old_tag_id ].keys()[ self.paths[ old_tag_id ].values().index(path) ]
+		if path in list(self.paths[ old_tag_id ].values()):
+			old_path_id = list(self.paths[ old_tag_id ].keys())[ list(self.paths[ old_tag_id ].values()).index(path) ]
 			self.paths[ old_tag_id ].pop( old_path_id, None )
 			if len( self.paths[ old_tag_id ] ) == 0:  # delete dictionary if no other paths with this tag id remain
 				self.paths.pop( old_tag_id, None )
@@ -54,14 +54,14 @@ class PathManager( object ):
 		paths = self.paths[ tag_id ]
 
 		# first path is main path
-		main_path_id, main_path = paths.items()[ 0 ]
+		main_path_id, main_path = list(paths.items())[ 0 ]
 
 		# every following path gets merged into main path
-		for path_id, path in paths.items()[1:]:
+		for path_id, path in list(paths.items())[1:]:
 
 			# if two detections have the same timestamp the one which is not empty wins or the first
 			# one otherwise
-			for detection in path.detections.values():
+			for detection in list(path.detections.values()):
 				detection.path = None
 				main_path.add_detection( detection )
 
@@ -77,7 +77,7 @@ class PathManager( object ):
 		path.clear()
 
 		paths = self.paths[ path.tag_id ]
-		path_id = paths.keys()[ paths.values().index( path ) ]
+		path_id = list(paths.keys())[ list(paths.values()).index( path ) ]
 		paths.pop( path_id, None )
 
 		if len( self.paths[ path.tag_id ] ) == 0:
@@ -141,7 +141,7 @@ class Path( object ):
 
 	def clear( self ):
 
-		for detection in self.detections.values():
+		for detection in list(self.detections.values()):
 			detection.path = None
 			detection.readability = 1
 		self.detections = {}

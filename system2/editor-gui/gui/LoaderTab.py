@@ -173,7 +173,7 @@ class LoaderTab( QtGui.QWidget ):
 	def load_data( self ):
 
 		if not os.path.exists( config.DATA_FOLDER ):
-			print 'Error: folder not found'
+			print('Error: folder not found')
 			return
 
 		self.block_inputs( True )
@@ -259,7 +259,7 @@ class LoaderTab( QtGui.QWidget ):
 	def load_tracks( self ):
 
 		if self.parent.dset_store is None:
-			print 'Error: no data folder loaded'
+			print('Error: no data folder loaded')
 			return
 
 		self.block_inputs( True )
@@ -278,7 +278,7 @@ class LoaderTab( QtGui.QWidget ):
 					input = pickle.load( paths_file )
 
 				if dset_store.source != input[ 'source' ]:
-					print 'Warning: data source for detections and paths do not match'
+					print('Warning: data source for detections and paths do not match')
 				paths_input = input[ 'paths' ]
 
 				self.paths_load_progress.setMaximum( len( paths_input ) )
@@ -288,12 +288,12 @@ class LoaderTab( QtGui.QWidget ):
 
 					path_manager.paths[ tag_id ] = {}
 
-					for path_id in paths_input[ tag_id ].keys():
+					for path_id in list(paths_input[ tag_id ].keys()):
 
 						path = ds.Path( tag_id )
 						path_manager.paths[ tag_id ][ path_id ] = path
 
-						for frame, detection_data in paths_input[ tag_id ][ path_id ].items():
+						for frame, detection_data in list(paths_input[ tag_id ][ path_id ].items()):
 
 							timestamp = dset_store.get_timestamp( frame )
 							if timestamp is not None:
@@ -308,7 +308,7 @@ class LoaderTab( QtGui.QWidget ):
 									if detection_id in dset.detections:
 										detection = dset.detections[ detection_id ]
 									else:
-										print 'Warning: detection_id not found, your truth file does not match your pipeline data. Please rematch!'
+										print('Warning: detection_id not found, your truth file does not match your pipeline data. Please rematch!')
 										continue
 
 									# if two paths claim the same detection only the first one gets it

@@ -98,7 +98,7 @@ class TimeStamp( object ):
 				f += 1
 				if f > 4:
 					f = 1
-					t = t.addSecs( 1 );
+					t = t.addSecs( 1 )
 				n = TimeStamp( self.date, t, self.cam, f )
 				if n.exists( database_connection ):
 					self.next = n
@@ -128,7 +128,7 @@ class TimeStamp( object ):
 				f -= 1
 				if f < 1:
 					f = 4
-					t = t.addSecs( -1 );
+					t = t.addSecs( -1 )
 				n = TimeStamp( self.date, t, self.cam, f )
 				if n.exists( database_connection ):
 					self.previous = n
@@ -160,7 +160,7 @@ class TimeStamp( object ):
 
 		elif ( approx < 0 ):
 			i = 0
-			t = self;
+			t = self
 			while i > approx:
 				t = t.get_previous()
 				i -= 1
@@ -170,11 +170,11 @@ class TimeStamp( object ):
 
 		elif ( approx > 0 ):
 			i = 0
-			t = self;
+			t = self
 			while i < approx:
 				t = t.get_next()
 				if t is None:
-					break;
+					break
 				i += 1
 				if self == t:
 					return i
