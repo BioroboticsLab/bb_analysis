@@ -63,7 +63,7 @@ class TagView( QtGui.QGraphicsView ):
 
 			for i, digit in enumerate( self.binary_id ):
 				section = TagSection( i, self.flip_id_bit )
-				section.setStartAngle( 90*16 + i*30*16 - self.rotation*16 )
+				section.setStartAngle( 16*( 60 - i*30 - self.rotation ) )
 				section.setSpanAngle( 30*16 )
 				section.setPen( self.white_pen )
 				if digit:

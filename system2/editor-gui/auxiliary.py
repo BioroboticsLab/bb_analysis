@@ -1,25 +1,17 @@
 import numpy as np
-
+import bb_utils.ids
 
 # Convert Integer ID in Numpy array with ones and zeros (binary representation)
-def int_id_to_binary( id ):
+def int_id_to_binary( ferwar_id ):
 
-	result = []
-	while id:
-		result.append( id & 1 )
-		id >>= 1
-	while len( result ) < 12:
-		result.append( 0 )
-	result.reverse()
-	return np.array( result )
+	return bb_utils.ids.BeesbookID.from_ferwar(ferwar_id).as_bb_binary()
 
 
 # Convert Numpy array of ones and zeros (binary representation) into Integer ID
 def binary_id_to_int( binary_id ):
 
-	powers = np.power( 2, list(range(12)) )[::-1]
-	id = int( np.sum( binary_id * powers ) )
-	return id
+	return bb_utils.ids.BeesbookID.from_bb_binary(binary_id).as_ferwar()
+
 
 
 # iterate over a list in neighboring pairs
