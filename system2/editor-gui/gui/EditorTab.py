@@ -141,8 +141,10 @@ class EditorTab( QtGui.QSplitter ):
 		# column 3
 
 		# view
-		self.path_view = PathView( self, None, self.on_key_press, self.on_mouse_move )
+		self.path_view = PathView( self, None, self.on_key_press, self.on_mouse_move, self.on_mouse_press )
 		self.path_view.setRenderHint( QtGui.QPainter.Antialiasing, True )
+
+		self.path_view_scroll_origin = None
 
 		# view buttons
 		self.time_lable = QtGui.QLabel( self )
@@ -633,8 +635,23 @@ class EditorTab( QtGui.QSplitter ):
 		elif event.key() == QtCore.Qt.Key_5:
 			self.set_readability( ds.Readability.Unreadable )
 
+	def on_mouse_press( self, event=None ):
 
-	def on_mouse_move( self ):
+		if event.button() == QtCore.Qt.MiddleButton:
+			self.path_view_scroll_origin = event.pos()
+
+	def on_mouse_move( self, event=None ):
+		
+		if (event is not None) \
+			and (self.path_view_scroll_origin is not None) \
+			and (event.buttons() == QtCore.Qt.MiddleButton):
+
+			offset = self.path_view_scroll_origin - event.pos()
+			self.path_view_scroll_origin = event.pos()
+
+			self.path_view.verticalScrollBar().setValue(self.path_view.verticalScrollBar().value() + offset.y())
+			self.path_view.horizontalScrollBar().setValue(self.path_view.horizontalScrollBar().value() + offset.x())
+			return
 
 		if not self.editing_active:
 			return

@@ -26,7 +26,8 @@ class PathView( QtGui.QGraphicsView ):
 			self, parent,
 			ellipse_click_callback = None,
 			key_callback           = None,
-			mouse_move_callback    = None
+			mouse_move_callback    = None,
+			mouse_press_callback   = None
 		):
 
 		QtGui.QGraphicsView.__init__( self, parent )
@@ -34,6 +35,7 @@ class PathView( QtGui.QGraphicsView ):
 		self.setMouseTracking( True )
 
 		self.ellipse_click_callback = ellipse_click_callback
+		self.mouse_press_callback = mouse_press_callback
 		self.mouse_move_callback = mouse_move_callback
 		self.setScene( PathScene( key_callback, self ) )
 		self.setSceneRect( 0, 0, 4000, 3000 )
@@ -69,6 +71,7 @@ class PathView( QtGui.QGraphicsView ):
 		self.overlay_brush = QtGui.QBrush( black_color )
 		self.id_text_brush = QtGui.QBrush( white_color )
 
+		self.view_scroll_origin = None
 
 	# draw background area
 	def render_area( self ):
@@ -171,6 +174,9 @@ class PathView( QtGui.QGraphicsView ):
 
 	def mouseMoveEvent( self, event ):
 
-		self.mouse_move_callback()
+		self.mouse_move_callback( event )
 
+	def mousePressEvent( self, event ):
+
+		self.mouse_press_callback( event )
 
