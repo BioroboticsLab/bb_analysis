@@ -8,7 +8,7 @@ class DetectionEllipse( QtGui.QGraphicsEllipseItem ):
 		self.ellipse_click_callback = ellipse_click_callback
 
 		self.detection = detection
-		super( DetectionEllipse, self ).__init__( detection.position[ 0 ]-50, detection.position[ 1 ]-50, 100, 100 )
+		super( DetectionEllipse, self ).__init__( detection.position[ 0 ]-20, detection.position[ 1 ]-20, 40, 40 )
 
 
 	def mousePressEvent( self, event ):

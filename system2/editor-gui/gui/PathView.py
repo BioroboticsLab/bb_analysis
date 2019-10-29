@@ -40,7 +40,7 @@ class PathView( QtGui.QGraphicsView ):
 
 		self.scale_amount = 0.1
 		self.scale_min = 0.05
-		self.scale_max = 1
+		self.scale_max = 2.0
 
 		self.scale_current = 0.17
 		self.scale( self.scale_current, self.scale_current )
@@ -57,12 +57,13 @@ class PathView( QtGui.QGraphicsView ):
 		green_color      = QtGui.QColor(   0, 196,   0 )
 
 		self.no_pen                = QtGui.QPen( QtCore.Qt.NoPen )
-		self.circle_pen            = QtGui.QPen( orange_color,    7.5 )
-		self.circle_blocked_pen    = QtGui.QPen( red_color,        10 )
-		self.circle_selected_pen   = QtGui.QPen( blue_color,       10 )
-		self.position_pen          = QtGui.QPen( purple_color,     10 )
-		self.position_selected_pen = QtGui.QPen( green_color,      10 )
-		self.path_pen              = QtGui.QPen( light_blue_color, 10 )
+		default_pen_size = 5.0 
+		self.circle_pen            = QtGui.QPen( orange_color,    0.75 * default_pen_size )
+		self.circle_blocked_pen    = QtGui.QPen( red_color,        default_pen_size )
+		self.circle_selected_pen   = QtGui.QPen( blue_color,       default_pen_size )
+		self.position_pen          = QtGui.QPen( purple_color,     default_pen_size )
+		self.position_selected_pen = QtGui.QPen( green_color,      default_pen_size )
+		self.path_pen              = QtGui.QPen( light_blue_color, default_pen_size )
 
 		self.area_brush    = QtGui.QBrush( grey_color )
 		self.overlay_brush = QtGui.QBrush( black_color )
@@ -120,7 +121,7 @@ class PathView( QtGui.QGraphicsView ):
 	# show detections with circles
 	def render_detections( self, dset, current_paths = [], rainbow_mode = False ):
 
-		for d in list(dset.detections.values()):
+		for d in dset.detections:
 			if not d.is_unpositioned():
 				circle = DetectionEllipse( d, self.ellipse_click_callback )
 

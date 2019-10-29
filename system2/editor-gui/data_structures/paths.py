@@ -83,7 +83,14 @@ class PathManager( object ):
 		if len( self.paths[ path.tag_id ] ) == 0:
 			self.paths.pop( path.tag_id, None )
 
+	def get_sorted_keys( self ):
 
+		all_keys = self.paths.keys()
+		sorted_keys = list(sorted([k for k in all_keys if k is not None]))
+		if None in all_keys:
+			sorted_keys = [None] + sorted_keys
+		return sorted_keys
+		
 class Path( object ):
 
 	def __init__( self, tag_id = None ):

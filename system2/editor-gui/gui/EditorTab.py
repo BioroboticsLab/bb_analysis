@@ -110,10 +110,10 @@ class EditorTab( QtGui.QSplitter ):
 		self.path_table.keyPressEvent = self.on_key_press
 		self.path_table.setRowCount( 0 )
 		self.path_table.setColumnCount( 4 )
-		self.path_table.setColumnWidth( 0, 55 );
-		self.path_table.setColumnWidth( 1, 55 );
-		self.path_table.setColumnWidth( 2, 35 );
-		self.path_table.setColumnWidth( 3, 55 );
+		self.path_table.setColumnWidth( 0, 55 )
+		self.path_table.setColumnWidth( 1, 55 )
+		self.path_table.setColumnWidth( 2, 35 )
+		self.path_table.setColumnWidth( 3, 55 )
 		self.path_table.setHorizontalHeaderLabels( [ 'Detec.', 'Decod.', 'Pos.', 'Reada.' ] )
 		header = self.path_table.horizontalHeader()
 		header.setResizeMode( QtGui.QHeaderView.Fixed )
@@ -251,6 +251,7 @@ class EditorTab( QtGui.QSplitter ):
 								detection.detection_id,
 								detection.position[ 0 ],
 								detection.position[ 1 ],
+								detection.data_source,
 								detection.readability
 							)
 
@@ -312,7 +313,7 @@ class EditorTab( QtGui.QSplitter ):
 	def build_path_tree( self ):
 
 		self.path_tree.clear()
-		for tag_id in sorted( self.path_manager.paths.keys() ):
+		for tag_id in self.path_manager.get_sorted_keys():
 			tag_id_node = QtGui.QTreeWidgetItem( self.path_tree, [
 				str( tag_id ),
 				str( len( self.path_manager.paths[ tag_id ] ) )
@@ -367,7 +368,7 @@ class EditorTab( QtGui.QSplitter ):
 
 			self.tag_view.set_tag( path.tag_id )
 
-			labels = QtCore.QStringList()
+			labels = []
 
 			self.path_table.setRowCount( len( path.detections ) )
 			for i, timestamp in enumerate( sorted( path.detections.keys() ) ):
@@ -624,9 +625,13 @@ class EditorTab( QtGui.QSplitter ):
 		elif event.key() == QtCore.Qt.Key_1:
 			self.set_readability( ds.Readability.Completely )
 		elif event.key() == QtCore.Qt.Key_2:
-			self.set_readability( ds.Readability.Partially )
+			self.set_readability( ds.Readability.Untagged )
 		elif event.key() == QtCore.Qt.Key_3:
-			self.set_readability( ds.Readability.Not_At_All )
+			self.set_readability( ds.Readability.InCell )
+		elif event.key() == QtCore.Qt.Key_4:
+			self.set_readability( ds.Readability.UpsideDown )
+		elif event.key() == QtCore.Qt.Key_5:
+			self.set_readability( ds.Readability.Unreadable )
 
 
 	def on_mouse_move( self ):
@@ -653,7 +658,7 @@ class EditorTab( QtGui.QSplitter ):
 		mouse_pos = np.array( [ mouse_pos_scene.x(), mouse_pos_scene.y() ] )
 
 		# get nearest detection within a limit
-		nearest = self.get_nearest_detection( timestamp, mouse_pos, limit = 70 )
+		nearest = self.get_nearest_detection( timestamp, mouse_pos.reshape(1, 2), limit = 30 )
 
 
 		readability = ds.Readability.Completely  # default value
@@ -671,7 +676,7 @@ class EditorTab( QtGui.QSplitter ):
 		if (
 			    nearest is not None   # there is a detection nearby
 			and nearest.path == path  # it already belongs to the current path
-			and readability != ds.Readability.Not_At_All  # current state wasn't marked as unreadable before
+			and readability != ds.Readability.Unreadable  # current state wasn't marked as unreadable before
 		):
 
 			# don't change the detection already present
@@ -680,7 +685,7 @@ class EditorTab( QtGui.QSplitter ):
 		elif (
 			    nearest is not None   # there is a detection nearby
 			and nearest.path is None  # it's not already assigned
-			and readability != ds.Readability.Not_At_All  # current state wasn't marked as unreadable before
+			and readability != ds.Readability.Unreadable  # current state wasn't marked as unreadable before
 		):
 
 			# assign the new found detection to our path

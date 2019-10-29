@@ -10,7 +10,6 @@ from bb_binary import Frame, Repository, load_frame_container, to_datetime, conv
 import config
 import data_structures as ds
 
-
 class LoaderTab( QtGui.QWidget ):
 
 	def __init__( self, parent, app ):
@@ -33,7 +32,7 @@ class LoaderTab( QtGui.QWidget ):
 
 		init_date  = QtCore.QDate( config.DATE[ 0 ], config.DATE[ 1 ], config.DATE[ 2 ] )
 		min_date   = QtCore.QDate( 2014, 1, 1 )
-		max_date   = QtCore.QDate( 2015, 12, 31 )
+		max_date   = QtCore.QDate( 2099, 12, 31 )
 		date_label = QtGui.QLabel( 'Date:' )
 		self.date_input = QtGui.QDateEdit( init_date, self )
 		self.date_input.setMinimumDate( min_date )
@@ -186,6 +185,7 @@ class LoaderTab( QtGui.QWidget ):
 		dset_store = self.parent.dset_store
 
 		try:
+			print("Loading repository at {}".format(config.DATA_FOLDER))
 			repo = Repository( config.DATA_FOLDER )
 			start_time = datetime(
 				config.DATE[ 0 ], config.DATE[ 1 ], config.DATE[ 2 ],
@@ -193,7 +193,8 @@ class LoaderTab( QtGui.QWidget ):
 				tzinfo=pytz.utc
 			)
 
-			fnames = repo.iter_fnames( begin=start_time )
+			fnames = list(repo.iter_fnames( begin=start_time ))
+			print("Found {} frame containers.".format(len(fnames)))
 			for fname in fnames:
 
 				frame_container = load_frame_container( fname )
@@ -223,18 +224,35 @@ class LoaderTab( QtGui.QWidget ):
 					dset = ds.DetectionSet()
 					dset_store.store[ timestamp ] = dset
 
-					data = convert_frame_to_numpy( frame )
-
-					for detection_data in data:
-
-						dset.add_detection( ds.Detection(
-							detection_data[ 'idx' ],
+					def make_detection(bb_binary_detection, decoded_id, data_source, readability=None):
+						return ds.Detection(
+							bb_binary_detection.idx,
 							timestamp,
-							np.array( [ detection_data[ 'ypos' ], detection_data[ 'xpos' ] ] ),  # rotated, otherwise will be portrait orientation
-							detection_data[ 'localizerSaliency' ],
-							detection_data[ 'decodedId' ][::-1]  # reversed, we want least significant bit last
-						) )
+							np.array( [ bb_binary_detection.xpos, bb_binary_detection.ypos ] ),  # rotated, otherwise will be portrait orientation
+							bb_binary_detection.localizerSaliency,
+							decoded_id,
+							data_source,
+							readability
+						) 
 
+					for detection in frame.detectionsDP:
+						decoded_id = np.array(detection.decodedId, dtype=np.float32) / 255.0
+						dset.add_detection(make_detection(detection, decoded_id,
+						                                  ds.detections.DataSource.DetectionsDP,
+						                                  ds.detections.Readability.Completely))
+
+					for detection in frame.detectionsBees:
+						readability = detection.type
+						if readability == "untagged":
+							readability = ds.detections.Readability.Untagged
+						elif readability == "inCell":
+							readability = ds.detections.Readability.InCell
+						elif readability == "upsideDown":
+							readability = ds.detections.Readability.UpsideDown
+						dset.add_detection(make_detection(detection, None,
+						                                  ds.detections.DataSource.DetectionsBees,
+						                                  readability))
+					
 					dset.build_kd_tree()
 
 					frame_index += 1
@@ -248,10 +266,11 @@ class LoaderTab( QtGui.QWidget ):
 				# break because we only load the first fname
 				break
 
-		except:
-
-
-			pass
+		except Exception as e:
+			print("Error loading data:")
+			print(str(e))
+			import traceback
+			traceback.print_exc()
 
 		self.block_inputs( False )
 
@@ -298,17 +317,18 @@ class LoaderTab( QtGui.QWidget ):
 							timestamp = dset_store.get_timestamp( frame )
 							if timestamp is not None:
 
-								detection_id, pos_x, pos_y, readability = detection_data
+								detection_id, pos_x, pos_y, data_source, readability = detection_data
 
 								# data point is associated with a detection from the pipeline output
-								if detection_id is not None:
+								if data_source != ds.detections.DataSource.NotInData:
 
 									dset = dset_store.get( timestamp )
 
-									if detection_id in dset.detections:
-										detection = dset.detections[ detection_id ]
-									else:
-										print('Warning: detection_id not found, your truth file does not match your pipeline data. Please rematch!')
+									detection = next((d for d in dset.detections 
+									                 if (d.data_source == data_source and d.detection_id == detection_id)), None)
+
+									if detection is None:
+										print('Warning: detection_id {} not found, your truth file does not match your pipeline data. Please rematch!'.format(detection_id))
 										continue
 
 									# if two paths claim the same detection only the first one gets it
@@ -336,9 +356,11 @@ class LoaderTab( QtGui.QWidget ):
 				self.paths_load_label.setText( str( len( paths_input ) ) + ' paths loaded' )
 				self.app.processEvents()
 
-			except:
-
-				pass
+			except Exception as e:
+				print("Error loading data:")
+				print(str(e))
+				import traceback
+				traceback.print_exc()
 
 		else:
 

@@ -37,7 +37,7 @@ class TimeStamp( object ):
 
 	def get_next( self ):
 
-		return self.__next__
+		return self.next
 
 
 	def get_previous( self ):

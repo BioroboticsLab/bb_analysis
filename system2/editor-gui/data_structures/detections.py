@@ -7,14 +7,22 @@ from sklearn.neighbors import KDTree
 import auxiliary as aux
 
 
-# different from the bb_binary schema because we need easily accessible keys
+# Analogous to the bb_binary schema.
 class Readability:
 
 	Unknown    = 0
 	Completely = 1
-	Partially  = 2
-	Not_At_All = 3
+	Unreadable = 2
+	Untagged   = 3
+	InCell     = 4
+	UpsideDown = 5
 
+# Determines where in the original bb_binary data the detection came from.
+class DataSource:
+
+	NotInData      = 0
+	DetectionsDP   = 1
+	DetectionsBees = 2
 
 class DetectionSetStore( object ):
 
@@ -41,7 +49,7 @@ class DetectionSetStore( object ):
 	def delete_path_associations( self ):
 
 		for dset in list(self.store.values()):
-			for detection in list(dset.detections.values()):
+			for detection in dset.detections:
 				detection.path = None
 
 
@@ -49,18 +57,18 @@ class DetectionSet( object ):
 
 	def __init__( self ):
 
-		self.detections = {}  # key: detection_id, value: type detection
+		self.detections = []
 		self.kd_tree = None
 
 
 	def add_detection( self, detection ):
 
-		self.detections[ detection.detection_id ] = detection
+		self.detections.append(detection)
 
 
 	def build_kd_tree( self ):
 
-		positions = [ detection.position for detection in list(self.detections.values()) ]
+		positions = [ detection.position for detection in self.detections ]
 		self.kd_tree = KDTree( np.array( positions ), leaf_size = 10, metric = 'euclidean' )
 
 
@@ -70,14 +78,14 @@ class DetectionSet( object ):
 		distance = distances[ 0 ][ 0 ]
 		index = indices[ 0 ][ 0 ]
 		if distance <= limit:
-			return list(self.detections.values())[ index ]
+			return self.detections[ index ]
 		else:
 			return None
 
 
 class Detection( object ):
 
-	def __init__( self, detection_id, timestamp, position, localizer_saliency, decoded_id ):
+	def __init__( self, detection_id, timestamp, position, localizer_saliency, decoded_id, data_source, readability=Readability.Completely ):
 
 		self.detection_id       = detection_id
 		self.timestamp          = timestamp      # type TimeStamp
@@ -86,7 +94,8 @@ class Detection( object ):
 		self.decoded_id         = decoded_id     # list of floats
 		self.decoded_mean       = None
 
-		self.readability        = Readability.Completely
+		self.data_source        = data_source
+		self.readability        = readability
 
 		self.path = None
 
@@ -121,6 +130,6 @@ class EmptyDetection( Detection ):
 	# May have position and readability data assigned though.
 	def __init__( self, timestamp ):
 
-		Detection.__init__( self, None, timestamp, None, None, None )
+		Detection.__init__( self, None, timestamp, None, None, None, DataSource.NotInData )
 
 
