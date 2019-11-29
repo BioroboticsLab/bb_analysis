@@ -90,7 +90,7 @@ class PathManager( object ):
 		if None in all_keys:
 			sorted_keys = [None] + sorted_keys
 		return sorted_keys
-		
+
 class Path( object ):
 
 	def __init__( self, tag_id = None ):
@@ -99,7 +99,7 @@ class Path( object ):
 		self.tag_id = tag_id
 
 		self.color = colorsys.hsv_to_rgb( random.random(), 1.0, 1.0 )
-		self.pen   = QtGui.QPen( QtGui.QColor( self.color[0]*255, self.color[1]*255, self.color[2]*255 ), 10 )
+		self.pen   = QtGui.QPen( QtGui.QColor( self.color[0]*255, self.color[1]*255, self.color[2]*255 ), 5.0 )
 
 
 	def add_detection( self, detection ):

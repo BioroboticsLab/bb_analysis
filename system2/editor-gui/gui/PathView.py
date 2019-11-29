@@ -65,7 +65,7 @@ class PathView( QtGui.QGraphicsView ):
 		self.circle_selected_pen   = QtGui.QPen( blue_color,       default_pen_size )
 		self.position_pen          = QtGui.QPen( purple_color,     default_pen_size )
 		self.position_selected_pen = QtGui.QPen( green_color,      default_pen_size )
-		self.path_pen              = QtGui.QPen( light_blue_color, default_pen_size )
+		self.path_pen              = QtGui.QPen( light_blue_color, 0.25 * default_pen_size )
 
 		self.area_brush    = QtGui.QBrush( grey_color )
 		self.overlay_brush = QtGui.QBrush( black_color )
