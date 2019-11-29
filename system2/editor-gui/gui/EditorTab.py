@@ -656,6 +656,10 @@ class EditorTab( QtGui.QSplitter ):
 		if not self.editing_active:
 			return
 
+		# Check if modifier key for new detection is active.
+		modifiers = QtGui.QApplication.keyboardModifiers()
+		insert_new_detection_mode = (modifiers & QtCore.Qt.AltModifier) == QtCore.Qt.AltModifier
+
 		path = self.current_paths[ 0 ]
 		timestamp = self.current_timestamp
 
@@ -675,7 +679,9 @@ class EditorTab( QtGui.QSplitter ):
 		mouse_pos = np.array( [ mouse_pos_scene.x(), mouse_pos_scene.y() ] )
 
 		# get nearest detection within a limit
-		nearest = self.get_nearest_detection( timestamp, mouse_pos.reshape(1, 2), limit = 30 )
+		nearest = None
+		if not insert_new_detection_mode:
+			nearest = self.get_nearest_detection( timestamp, mouse_pos.reshape(1, 2), limit = 60 )
 
 
 		readability = ds.Readability.Completely  # default value
@@ -715,7 +721,8 @@ class EditorTab( QtGui.QSplitter ):
 		# else insert empty detection with position information
 		# if mouse position is inside camera image dimensions
 		elif (
-			    mouse_pos[ 0 ] >= 0 and mouse_pos[ 0 ] <= 4000
+				insert_new_detection_mode
+			and mouse_pos[ 0 ] >= 0 and mouse_pos[ 0 ] <= 4000
 			and mouse_pos[ 1 ] >= 0 and mouse_pos[ 1 ] <= 3000
 		):
 
