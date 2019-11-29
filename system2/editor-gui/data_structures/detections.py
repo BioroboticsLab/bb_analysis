@@ -122,6 +122,20 @@ class Detection( object ):
 
 		return str( self.detection_id )
 
+	def get_readability_abbreviation( self ):
+
+		if self.readability == Readability.Unknown:
+			return "??"
+		if self.readability == Readability.Completely:
+			return "☉"
+		if self.readability == Readability.Unreadable:
+			return "👁"
+		if self.readability == Readability.Untagged:
+			return "⛒"
+		if self.readability == Readability.InCell:
+			return "⬡"
+		if self.readability == Readability.UpsideDown:
+			return "⟲"
 
 class EmptyDetection( Detection ):
 

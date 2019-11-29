@@ -397,10 +397,10 @@ class EditorTab( QtGui.QSplitter ):
 					position_item.setFont( self.missing_font )
 				self.path_table.setItem( i, 2, position_item )
 
-				readability_item = QtGui.QTableWidgetItem( str( detection.readability ) )
+				readability_item = QtGui.QTableWidgetItem( detection.get_readability_abbreviation() )
 				self.path_table.setItem( i, 3, readability_item )
 
-			self.path_table.setVerticalHeaderLabels( labels );
+			self.path_table.setVerticalHeaderLabels( labels )
 
 			self.table_select_row()
 
