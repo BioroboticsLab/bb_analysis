@@ -547,23 +547,28 @@ class EditorTab( QtGui.QSplitter ):
 							self.path_view.render_id( detection.position, path.tag_id )
 
 
-	def show_next( self ):
+	def show_timestamp( self, timestamp ):
 
-		next_timestamp = self.current_timestamp.get_next()
-		if next_timestamp is not None and not self.end_timestamp < next_timestamp:
-			self.set_current_timestamp( next_timestamp )
+		if timestamp is not None and not self.end_timestamp < timestamp and not timestamp < self.start_timestamp:
+			self.set_current_timestamp( timestamp )
 		if self.editing_active:
 			self.on_mouse_move()
 
+	def show_next( self ):
+
+		self.show_timestamp( self.current_timestamp.get_next() )
 
 	def show_previous( self ):
 
-		previous_timestamp = self.current_timestamp.get_previous()
-		if previous_timestamp is not None and not previous_timestamp < self.start_timestamp:
-			self.set_current_timestamp( previous_timestamp )
-		if self.editing_active:
-			self.on_mouse_move()
+		self.show_timestamp( self.current_timestamp.get_previous() )
 
+	def show_first( self ):
+
+		self.show_timestamp( self.start_timestamp )
+
+	def show_last( self ):
+
+		self.show_timestamp( self.end_timestamp )
 
 	def delete_current_detection( self ):
 
@@ -606,6 +611,11 @@ class EditorTab( QtGui.QSplitter ):
 			self.show_next()
 		elif event.key() == QtCore.Qt.Key_Down:
 			self.show_next()
+
+		elif event.key() == QtCore.Qt.Key_S:
+			self.show_last()
+		elif event.key() == QtCore.Qt.Key_W:
+			self.show_first()
 
 		elif event.key() == QtCore.Qt.Key_E:
 			self.activate_editing( True )
