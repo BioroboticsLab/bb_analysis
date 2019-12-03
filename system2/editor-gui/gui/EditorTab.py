@@ -14,6 +14,7 @@ class EditorTab( QtGui.QSplitter ):
 
 		QtGui.QWidget.__init__( self, parent )
 		self.keyPressEvent = self.on_key_press
+		self.keyReleaseEvent = self.on_key_release
 		self.parent = parent
 		self.app = app
 
@@ -617,6 +618,10 @@ class EditorTab( QtGui.QSplitter ):
 		elif event.key() == QtCore.Qt.Key_W:
 			self.show_first()
 
+		elif event.key() == QtCore.Qt.Key_Alt:
+			if self.editing_active: # Update new detection circle.
+				self.on_mouse_move()
+
 		elif event.key() == QtCore.Qt.Key_E:
 			self.activate_editing( True )
 		elif event.key() == QtCore.Qt.Key_Q:
@@ -644,6 +649,14 @@ class EditorTab( QtGui.QSplitter ):
 			self.set_readability( ds.Readability.UpsideDown )
 		elif event.key() == QtCore.Qt.Key_5:
 			self.set_readability( ds.Readability.Unreadable )
+
+	def on_key_release ( self, event ):
+
+		handled = False
+		if event.key() == QtCore.Qt.Key_Alt:
+			if self.editing_active: # Update new detection circle.
+				self.on_mouse_move()
+				handled = True
 
 	def on_mouse_press( self, event=None ):
 
