@@ -144,6 +144,6 @@ class EmptyDetection( Detection ):
 	# May have position and readability data assigned though.
 	def __init__( self, timestamp ):
 
-		Detection.__init__( self, None, timestamp, None, None, None, DataSource.NotInData )
+		Detection.__init__( self, None, timestamp, None, None, None, DataSource.NotInData, readability=Readability.Unreadable )
 
 

@@ -692,40 +692,14 @@ class EditorTab( QtGui.QSplitter ):
 		nearest = None
 		if not insert_new_detection_mode:
 			nearest = self.get_nearest_detection( timestamp, mouse_pos.reshape(1, 2), limit = 60 )
-
-
-		readability = ds.Readability.Completely  # default value
-		had_previous_detection = False
-
-		# use readability state of last detection if available
-		if timestamp.get_previous() in path.detections:
-			readability = path.detections[ timestamp.get_previous() ].readability
-			had_previous_detection = True
 		
-		# Unless another detection is already assigned for this timestamp. Then use this readability state for
-		# any coming changes
-		if timestamp in path.detections:
-			readability = path.detections[ timestamp ].readability
-
 		if (
 			    nearest is not None   # there is a detection nearby
-			and nearest.path == path  # it already belongs to the current path
-			and readability != ds.Readability.Unreadable  # current state wasn't marked as unreadable before
-		):
-
-			# don't change the detection already present
-			pass
-
-		elif (
-			    nearest is not None   # there is a detection nearby
 			and nearest.path is None  # it's not already assigned
-			and readability != ds.Readability.Unreadable  # current state wasn't marked as unreadable before
 		):
 
 			# assign the new found detection to our path
 			path.add_and_overwrite_detection( nearest )
-			if had_previous_detection:
-				nearest.readability = readability
 			self.build_path_details( self.current_paths )
 
 		# else insert empty detection with position information
@@ -745,13 +719,11 @@ class EditorTab( QtGui.QSplitter ):
 				# otherwise the present detection will get its position updated
 				if not detection.is_empty():
 					detection = ds.EmptyDetection( timestamp )
-					detection.readability = readability
 					path.add_and_overwrite_detection( detection )
 
 			# no detection at this timestamp, insert new empty one
 			else:
 				detection = ds.EmptyDetection( timestamp )
-				detection.readability = readability
 				path.add_detection( detection )
 
 			detection.position = mouse_pos  # set position
