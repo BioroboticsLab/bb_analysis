@@ -122,7 +122,6 @@ class Path( object ):
 
 		if detection.timestamp in self.detections:
 			self.detections[ detection.timestamp ].path = None
-			self.detections[ detection.timestamp ].readability = 1
 		self.detections[ detection.timestamp ] = detection
 		detection.path = self
 		self._fill_with_empties( detection.timestamp )
@@ -135,7 +134,6 @@ class Path( object ):
 		# remove detection
 		self.detections.pop( timestamp, None )
 		detection.path = None
-		detection.readability = 1
 
 		# replace with empty detection
 		empty_detection = ds.EmptyDetection( timestamp )
@@ -150,7 +148,6 @@ class Path( object ):
 
 		for detection in list(self.detections.values()):
 			detection.path = None
-			detection.readability = 1
 		self.detections = {}
 
 
