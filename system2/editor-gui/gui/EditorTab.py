@@ -639,6 +639,10 @@ class EditorTab( QtGui.QSplitter ):
 		elif event.key() == QtCore.Qt.Key_P:
 			self.add_new_path()
 
+		elif event.key() == QtCore.Qt.Key_Space:
+			self.show_path_checkbox.setChecked( not self.show_path_checkbox.isChecked() )
+			self.update_path_view()
+
 		elif event.key() == QtCore.Qt.Key_1:
 			self.set_readability( ds.Readability.Completely )
 		elif event.key() == QtCore.Qt.Key_2:
