@@ -122,6 +122,7 @@ class EditorTab( QtGui.QSplitter ):
 		self.path_table.selectionModel().selectionChanged.connect( self.on_table_select )
 		self.path_table.setEditTriggers( QtGui.QAbstractItemView.NoEditTriggers )
 		self.path_table.setSelectionBehavior( QtGui.QAbstractItemView.SelectRows )
+		self.path_table.setSelectionMode( QtGui.QAbstractItemView.SingleSelection )
 
 		path_details_box = QtGui.QGroupBox( 'Path Details', self )
 		path_details_grid = QtGui.QGridLayout()
@@ -618,7 +619,7 @@ class EditorTab( QtGui.QSplitter ):
 		elif event.key() == QtCore.Qt.Key_W:
 			self.show_first()
 
-		elif event.key() == QtCore.Qt.Key_Alt:
+		elif event.key() == QtCore.Qt.Key_Alt or event.key() == QtCore.Qt.Key_Control:
 			if self.editing_active: # Update new detection circle.
 				self.on_mouse_move()
 
@@ -657,7 +658,7 @@ class EditorTab( QtGui.QSplitter ):
 	def on_key_release ( self, event ):
 
 		handled = False
-		if event.key() == QtCore.Qt.Key_Alt:
+		if event.key() == QtCore.Qt.Key_Alt or event.key() == QtCore.Qt.Key_Control:
 			if self.editing_active: # Update new detection circle.
 				self.on_mouse_move()
 				handled = True
@@ -686,6 +687,9 @@ class EditorTab( QtGui.QSplitter ):
 		# Check if modifier key for new detection is active.
 		modifiers = QtGui.QApplication.keyboardModifiers()
 		insert_new_detection_mode = (modifiers & QtCore.Qt.AltModifier) == QtCore.Qt.AltModifier
+		# Check if modifier key for tracking stationary bees is active.
+		stationary_bee_mode = (modifiers & QtCore.Qt.ControlModifier) == QtCore.Qt.ControlModifier
+		detection_search_distance = 60 if not stationary_bee_mode else 30
 
 		path = self.current_paths[ 0 ]
 		timestamp = self.current_timestamp
@@ -708,7 +712,7 @@ class EditorTab( QtGui.QSplitter ):
 		# get nearest detection within a limit
 		nearest = None
 		if not insert_new_detection_mode:
-			nearest = self.get_nearest_detection( timestamp, mouse_pos.reshape(1, 2), limit = 60 )
+			nearest = self.get_nearest_detection( timestamp, mouse_pos.reshape(1, 2), limit = detection_search_distance )
 		
 		if (
 			    nearest is not None   # there is a detection nearby
@@ -722,7 +726,7 @@ class EditorTab( QtGui.QSplitter ):
 		# else insert empty detection with position information
 		# if mouse position is inside camera image dimensions
 		elif (
-				insert_new_detection_mode
+				(insert_new_detection_mode or stationary_bee_mode)
 			and mouse_pos[ 0 ] >= 0 and mouse_pos[ 0 ] <= 4000
 			and mouse_pos[ 1 ] >= 0 and mouse_pos[ 1 ] <= 3000
 		):
