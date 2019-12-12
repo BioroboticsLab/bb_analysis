@@ -689,7 +689,7 @@ class EditorTab( QtGui.QSplitter ):
 		insert_new_detection_mode = (modifiers & QtCore.Qt.AltModifier) == QtCore.Qt.AltModifier
 		# Check if modifier key for tracking stationary bees is active.
 		stationary_bee_mode = (modifiers & QtCore.Qt.ControlModifier) == QtCore.Qt.ControlModifier
-		detection_search_distance = 60 if not stationary_bee_mode else 30
+		detection_search_distance = 60 if not stationary_bee_mode else 15
 
 		path = self.current_paths[ 0 ]
 		timestamp = self.current_timestamp
@@ -712,8 +712,8 @@ class EditorTab( QtGui.QSplitter ):
 		# get nearest detection within a limit
 		nearest = None
 		if not insert_new_detection_mode:
-			nearest = self.get_nearest_detection( timestamp, mouse_pos.reshape(1, 2), limit = detection_search_distance )
-		
+			nearest = self.get_nearest_detection( timestamp, mouse_pos.reshape(1, 2), limit = detection_search_distance, ignore_empty = stationary_bee_mode )
+
 		if (
 			    nearest is not None   # there is a detection nearby
 			and nearest.path is None  # it's not already assigned
@@ -722,7 +722,12 @@ class EditorTab( QtGui.QSplitter ):
 			# assign the new found detection to our path
 			path.add_and_overwrite_detection( nearest )
 			self.build_path_details( self.current_paths )
-
+		# We found something but it's already in our path? Then, don't insert empty detection.
+		elif (
+				nearest is not None
+			and nearest.path == path
+		):
+			pass
 		# else insert empty detection with position information
 		# if mouse position is inside camera image dimensions
 		elif (
@@ -767,11 +772,11 @@ class EditorTab( QtGui.QSplitter ):
 					self.on_mouse_move()
 
 
-	def get_nearest_detection( self, timestamp, pos, limit = 70 ):
+	def get_nearest_detection( self, timestamp, pos, limit = 70, ignore_empty = False ):
 
 		# using precalculated KD tree
 		dset = self.dset_store.get( timestamp )
-		nearest = dset.get_nearest_detection( pos, limit )
+		nearest = dset.get_nearest_detection( pos, limit, ignore_empty )
 		return nearest
 
 		# brute force variant

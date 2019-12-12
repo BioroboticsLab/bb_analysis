@@ -72,15 +72,20 @@ class DetectionSet( object ):
 		self.kd_tree = KDTree( np.array( positions ), leaf_size = 10, metric = 'euclidean' )
 
 
-	def get_nearest_detection( self, pos, limit = 70 ):
+	def get_nearest_detection( self, pos, limit = 70, ignore_empty = False ):
 
-		distances, indices = self.kd_tree.query( pos, k=1 )
-		distance = distances[ 0 ][ 0 ]
-		index = indices[ 0 ][ 0 ]
-		if distance <= limit:
-			return self.detections[ index ]
-		else:
-			return None
+		distances, indices = self.kd_tree.query( pos, k=3 )
+		assert distances.shape[0] <= 1
+		distances = distances[ 0 ] # We only queried one point.
+		candidates = [ self.detections[ i ] for i in indices[ 0 ] ]
+
+		for candidate, distance in zip( candidates, distances ):
+			if ignore_empty and candidate.is_empty():
+				continue
+			if distance > limit:
+				continue
+			return candidate
+		return None
 
 
 class Detection( object ):
