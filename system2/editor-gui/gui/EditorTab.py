@@ -549,6 +549,12 @@ class EditorTab( QtGui.QSplitter ):
 							self.path_view.render_id( detection.position, path.tag_id )
 
 
+	def center_on_position( self, timestamp, x, y ):
+		if timestamp is not None:
+			self.show_timestamp( timestamp )
+		if x is not None:
+			self.path_view.centerOn( x, y )
+
 	def show_timestamp( self, timestamp ):
 
 		if timestamp is not None and not self.end_timestamp < timestamp and not timestamp < self.start_timestamp:
@@ -654,6 +660,27 @@ class EditorTab( QtGui.QSplitter ):
 			self.set_readability( ds.Readability.UpsideDown )
 		elif event.key() == QtCore.Qt.Key_5:
 			self.set_readability( ds.Readability.Unreadable )
+		elif event.key() == QtCore.Qt.Key_G:
+			text, ok = QtGui.QInputDialog.getText(self, "Goto", "Enter <frame index> or <x, y> or <frame index, x, y>")
+			if ok:
+				timestamp = self.current_timestamp
+			
+				text = text.split(",")
+				if len(text) == 3 or len(text) == 1:
+					frame_index = int(text[0].strip())
+					try:
+						timestamp = next(t for t in self.dset_store.store.keys() if t.frame == frame_index)
+					except:
+						pass
+					text = text[1:]
+				x, y = None, None
+				if len(text) == 2:
+					try:
+						x = int(text[0].strip())
+						y = int(text[1].strip())
+					except:
+						pass
+				self.center_on_position(timestamp, x, y)
 
 	def on_key_release ( self, event ):
 
